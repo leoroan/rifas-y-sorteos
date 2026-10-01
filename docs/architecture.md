@@ -1079,31 +1079,56 @@ Decir "se juega con la Lotería Nacional" no determina un número ganador. Falta
 
 ### 11.2 `winner_method` (text + CHECK, evolucionable)
 
-| Código | Fórmula | Notas |
+| Código | Quién determina el número | Cómo funciona |
 |---|---|---|
-| `MODULO_RESTO` | `numbers_from + (extracto % total)` | El clásico "al resto". Default propuesto |
-| `EXTRACTO_EXACTO` | el número es el extracto, si cae en rango; si no, se reintenta con el sorteo siguiente | Sólo válido si el rango cubre el extracto |
-| `ULTIMOS_DIGITOS` | últimos N dígitos del extracto (`+numbers_from` si hace falta) | Requiere declarar N |
-| `MANUAL_STAFF` | el comerciante declara el número ganador con justificación y evidencia | Sorteos presenciales |
-| `EXTERNO_PRIMER_PREMIO` | número del primer premio del sorteo indicado | Cuando la lotería publica varios premios |
+| `MANUAL` | **El comerciante** | Declara el número ganador "a mano", con **justificación obligatoria** y evidencia (foto del sorteo presencial, planilla, acta). El sistema valida que el número exista, esté `PAID` y pertenezca al evento |
+| `RANDOM_SEEDED` | **El sistema** | Genera el número con un *seed* criptográfico del lado del servidor y publica la derivación completa para que cualquiera la verifique (§11.4) |
+| `EXTERNAL_LOTTERY` | Una lotería externa | El comerciante carga el extracto publicado; el sistema aplica la `winner_rule` elegida (`MODULO_RESTO`, `EXTRACTO_EXACTO`, `ULTIMOS_DIGITOS`) |
 
-No se implementan todos en el MVP: se implementan `MODULO_RESTO`, `EXTRACTO_EXACTO` y `MANUAL_STAFF`; el conjunto queda abierto.
+Los tres se implementan en el MVP. `MANUAL` y `RANDOM_SEEDED` son los dos caminos principales (confirmado por el OWNER); `EXTERNAL_LOTTERY` queda listo para cuando un comercio quiera usar una lotería, sin depender de ninguna.
 
-### 11.3 Registro del resultado, auditable y reproducible
+### 11.3 Sorteo aleatorio propio, verificable (`RANDOM_SEEDED`)
 
-RPC `event_record_draw_result(...)`:
+Un sorteo "random del sistema" no puede ser una caja negra: si el comerciante pudiera reintentar hasta que le guste el resultado, el sorteo no valdría nada. Tres propiedades lo resuelven:
+
+1. **El seed lo genera el servidor, nunca el cliente.** La RPC no acepta seed como parámetro. Un seed aportado por el comerciante le permitiría elegir el ganador.
+2. **Es de un solo tiro.** `draw_results` tiene `UNIQUE(event_id)` y no hay `UPDATE` ni `DELETE` para clientes: el comerciante obtiene **exactamente un** resultado. Si no le gusta, la única salida es cancelar el evento, que queda auditado y visible. Sin reintentos no hay *grinding*.
+3. **La derivación es reproducible.** Se guardan `seed`, `algorithm`, los snapshots del rango y el `computed_number`, así que cualquier participante puede recalcular el ganador y comprobar que no se eligió después.
+
+Fórmula exacta (guardada en `algorithm = 'SHA256_MOD60_V1'`):
+
+```text
+seed          = gen_random_bytes(32)                     -- criptográfico, del servidor
+h             = sha256_hex(seed || ':' || event_id)      -- 64 caracteres hex
+u             = ('x' || substr(h, 1, 15))::bit(60)::bigint
+computed      = numbers_from + (u % (numbers_to - numbers_from + 1))
+```
+
+Detalle de por qué 15 dígitos hex y no 8: 15 caracteres hex son 60 bits, que **siempre entran en un `bigint` con signo**. Así se evita la ambigüedad de interpretación con signo que tiene `bit(32)::int`, y el resultado es determinista en cualquier PostgreSQL.
+
+Se expone en la UI pública el bloque "verificá el sorteo": seed, fórmula, número resultante y la lista de números pagados al momento del cierre, para que cualquiera reproduzca el cálculo.
+
+**Mejora opcional (D13, no bloquea el MVP):** *commit-reveal* completo. Al cerrar el evento se publica `sha256(seed || event_id)` (compromiso) y recién al sortear se revela el seed. Aporta la garantía adicional de que el seed existía **antes** del cierre. Las columnas `seed_commitment` y `revealed_at` ya quedan en `draw_results` para poder activarlo sin migración de esquema.
+
+### 11.4 Registro del resultado, auditable y reproducible
+
+RPC `event_record_draw_result(...)` — un solo camino para los tres métodos:
 
 - Exige `has_merchant_permission(merchant_id,'event.draw')` y evento en `CLOSED`.
-- Guarda fuente, fecha, turno, extracto y **los snapshots** (`winner_method_snapshot`, `numbers_from_snapshot`, `numbers_to_snapshot`, `total_numbers_snapshot`).
+- Según `winner_method`:
+  - `MANUAL`: exige `p_declared_number` **y** `p_justification` no vacía (mínimo 20 caracteres) y evidencia.
+  - `RANDOM_SEEDED`: **ignora cualquier número o seed enviado por el cliente**, genera el seed server-side y calcula el número con la fórmula de §11.3.
+  - `EXTERNAL_LOTTERY`: exige `p_extract_number` y `p_draw_date`; aplica `winner_rule`.
+- Guarda los **snapshots** (`winner_method_snapshot`, `numbers_from_snapshot`, `numbers_to_snapshot`, `total_numbers_snapshot`), `seed`, `algorithm`, `seed_commitment` y `revealed_at`.
 - Calcula `computed_number` **en la base**, nunca en el cliente.
 - Escribe `audit_logs` con actor, antes y después.
+- Si el número resultante **no está `PAID`**, la RPC **no falla ni inventa un ganador**: registra el resultado y deja el evento en `CLOSED` señalando el caso, para que el comerciante decida (re-sortear con el OWNER, o aplicar la política de fallback). El sistema nunca adjudica un premio a un número no pagado por iniciativa propia.
 
 RPC `event_publish_winners(event_id)`:
 
-- Verifica que el número computado esté `PAID`. Si cayó en un número **disponible**, no hay ganador: eso se resuelve con `draw_fallback_policy` (decisión D5, §21; default propuesto `RESORT_NEXT_DRAW`). El sistema **nunca** inventa un ganador en silencio.
+- Verifica que el número computado esté `PAID` y sin ganador asignado.
 - Crea `event_winners` (uno por premio), pasa el número a `WINNER` y genera notificaciones.
 - Si el ganador es un participante **bloqueado**, igual gana: el bloqueo impide nuevas reservas, no revoca resultados (§10.5).
-- Sin evidencia no hay resultado: se exige al menos una observación o URL de evidencia.
 
 ---
 
@@ -1510,7 +1535,9 @@ En `terms_versions`, con `kind`:
 | `PARTICIPATION_RULES` | Global | Reglas generales de participación |
 | `EVENT_TERMS` | Evento | Condiciones particulares: premios, entrega, cancelación, mecanismo del ganador |
 
-Cada documento se versiona y **no se sobrescribe un texto publicado**: se crea una versión nueva y se marca `is_current`. Los textos deben tener revisión legal antes de un uso comercial (§22 B4), y la UI debe dejar claro que **la responsabilidad del cumplimiento es del comerciante**, no de la plataforma.
+Cada documento se versiona y **no se sobrescribe un texto publicado**: se crea una versión nueva y se marca `is_current`.
+
+**Textos de plantilla (confirmado por el OWNER):** la migración `0015_seed.sql` carga versiones `1.0-draft` de los tres documentos globales, marcadas explícitamente como **PLANTILLA — requiere revisión legal**, para que la aplicación no arranque sin textos. La legalidad se revisa después; por eso el sistema **no opina**: registra `legal_status` y deja la responsabilidad del cumplimiento del lado del comerciante, con la advertencia visible en la UI.
 
 ### 18.4 Evidencia de aceptación
 
@@ -1626,28 +1653,24 @@ Numeradas para que puedas responder D1, D2, … No avanzo a Fase 2 hasta tener e
 | **D2** | Dependencias del frontend | A) sólo router · B) router + `@tanstack/react-query` (+ opcionalmente react-hook-form/zod) | **B**, empezando sin react-hook-form |
 | **D3** | Retención de usuarios anónimos | A) no purgar · B) purgar a los 90 días sin actividad y sin reservas vivas · C) otro plazo | **B**, configurable en `system_settings` |
 | **D4** | `legal_status` ¿bloquea publicar? | A) permisivo con advertencia · B) estricto (exige `AUTHORIZED`/`EXEMPT`) | **A** para el MVP, con el modo B ya implementado y activable por el OWNER |
-| **D5** | Fórmula del ganador y caso "el extracto cae en un número no pagado" | Definir `winner_method` default y `draw_fallback_policy` | `MODULO_RESTO` + `RESORT_NEXT_DRAW` (se re-sortea con el siguiente extracto), siempre con evidencia |
+| **D5** | Fórmula del ganador | **RESUELTO.** El comerciante define el número **a mano** (`MANUAL`) con justificación obligatoria, o el sistema hace un **sorteo aleatorio propio con seed verificable** (`RANDOM_SEEDED`). Lotería externa (`EXTERNAL_LOTTERY`) queda disponible | El comerciante lo elige al publicar el evento, sin default impuesto. Ver §11 |
 | **D6** | ¿Se puede cerrar/determinar el sorteo con reservas `PENDING` vivas? | A) bloquear hasta que expiren · B) permitir cerrar y expirarlas al cerrar · C) permitir cerrar y dejarlas a criterio del comerciante | **B**, avisando cuántas va a expirar |
-| **D7** | ¿El OWNER ve PII de participantes de todos los comercios? | A) sólo agregados · B) PII completa con acceso auditado · C) PII sólo con justificación escrita | **A** por defecto + **C** como excepción auditada: es lo más seguro y lo más defendible legalmente |
+| **D7** | ¿El OWNER ve PII de participantes de todos los comercios? | **RESUELTO: SÍ.** El OWNER ve y audita todo: comercios, staff, usuarios registrados y sus participaciones. Es la opción B de la matriz | Queda auditado todo **cambio**; las lecturas de PII del OWNER no se registran por defecto (sería ruido a este volumen). Cuando el uso crezca, conviene revisitar con criterio de minimización |
 | **D8** | Derecho de supresión | A) borrado real · B) anonimización conservando hechos e IDs | **B**, con `profiles.status='ANONYMIZED'` |
 | **D9** | Staff `REMOVED` ¿puede participar en su ex-comercio? | A) no puede nunca · B) puede desde que se lo remueve · C) ventana de gracia (p. ej. 30 días) | **C**, para evitar la triangulación "me remueven para poder participar" |
 | **D10** | ¿Proyecto Supabase de staging separado? | A) uno solo · B) dos (prod + staging) | **B** en cuanto haya migraciones reales: probar los 12 casos críticos no puede hacerse sobre datos reales de comercios |
 | **D11** | Routing en Pages | A) `HashRouter` · B) `BrowserRouter` + `404.html` | **A** por simplicidad y robustez |
 | **D12** | Alcance de "estadísticas" del MVP | A) contadores simples en el panel · B) página con gráficos | **A** (el pedido dice explícitamente "no implementar BI") |
+| **D13** | *Commit-reveal* para el sorteo aleatorio | A) no implementar · B) publicar el compromiso del seed al cerrar y revelarlo al sortear | **A** en el MVP: el seed ya es del servidor, de un solo tiro y verificable. **B** si querés la garantía extra de que el seed existía antes del cierre: las columnas ya están en `draw_results` |
+| **D14** | Textos legales | A) dejar vacío hasta tener abogado · B) cargar plantillas marcadas como borrador | **B** (confirmado por el OWNER): la migración de seed carga plantillas `1.0-draft` para que la app no arranque sin textos, y la legalidad se revisa después |
 
 ## 22. Blockers técnicos inmediatos
 
-**B1 — No tengo acceso a la base de datos.** No hay `psql`, ni Supabase CLI, ni Docker en este entorno, y sólo tengo la publishable key (correcto por diseño: no debo tener más). Puedo **escribir** las migraciones, pero no aplicarlas ni correr los tests de RLS. Necesito una de estas opciones:
-
-- **(a)** que las apliques vos (te las dejo listas y ordenadas, con el orden exacto), o
-- **(b)** un `DATABASE_URL` / credencial de base para aplicar y testear (asumiendo el riesgo de que quedaría a la vista en este entorno), o
-- **(c)** conectar el repo a Supabase *branching* / CLI desde tu máquina.
-
-Recomiendo **(a)** para el MVP: las migraciones son archivos versionados en el repo, las aplicás vos, y yo verifico con pruebas de sólo lectura contra la API (que ya validé que funcionan) y con los scripts de test que escriba.
+**B1 — Acceso a la base: RESUELTO por acuerdo.** Yo escribo las migraciones versionadas en `supabase/migrations/`, vos las cargás en el SQL Editor de Supabase, y me pasás cualquier error para que lo corrija. No necesito credenciales de base. Ver `supabase/README.md` para el orden de carga y las consultas de verificación.
 
 **B2 — Anonymous sign-ins están deshabilitados** en el proyecto (`anonymous_users: false`). Hay que habilitarlos en *Authentication → Providers* para que el flujo anónimo funcione. Además, si vamos a usar la conversión anónimo→registrado, hay que habilitar **manual linking**.
 
-**B3 — Falta el UUID del OWNER.** El primer OWNER no puede auto-crearse (nadie puede asignarse `platform_role='OWNER'`, por diseño). Necesito: (1) que te registres en la app o crees el usuario desde el dashboard y (2) su UUID, para la migración de seed. Se siembra en una migración aparte, con el UUID explícito.
+**B3 — UUID del OWNER: RESUELTO.** `leoroan+rifasysorteos@gmail.com` → `f8cea989-2f3a-4647-ad5a-74101c854671`. Se siembra en `supabase/migrations/0015_seed.sql`. Nota: esa migración exige que el usuario **ya exista** en `auth.users` (o sea: que te hayas registrado antes de cargarla); el seed lo verifica y avisa si no lo encuentra.
 
 **B4 — Los textos legales no pueden escribirse solos.** Puedo redactar borradores razonables de términos, privacidad y reglas de participación, pero **antes de un uso comercial deben revisarse legalmente**, sobre todo el encuadre de sorteos con contraprestación. Lo digo ahora para que no se convierta en un problema después.
 
