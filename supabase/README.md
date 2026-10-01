@@ -107,7 +107,33 @@ El mensaje de error completo (`ERROR: ...` con `LINE` y `HINT`), y el nombre del
 
 Tests de RLS y de concurrencia en `supabase/tests/`: los 12 casos críticos (§20 del documento de arquitectura), incluyendo la prueba de dos reservas simultáneas sobre el mismo número. Esos tests son la garantía real de que la seguridad quedó bien, y son el paso siguiente a que las migraciones carguen sin error.
 
-## Decisiones de diseño que conviene tener presentes al cargar
+## Verificación antes de cargar
+
+Dos chequeos estáticos, sin necesidad de base de datos ni credenciales. Conviene correrlos antes de pegar cualquier archivo en el SQL Editor:
+
+```bash
+node scripts/validate-sql.js supabase/migrations/*.sql    # sintaxis real (libpg_query) + balance PL/pgSQL
+node scripts/check-conflicts.js supabase/migrations/*.sql # cada ON CONFLICT tiene su índice único
+```
+
+- **`validate-sql.js`** parsea **cada sentencia** con el parser real de PostgreSQL y reporta archivo y línea. También verifica que los bloques `begin/end`, `if/end if`, `loop/end loop` de cada función estén balanceados (un truncado de archivo no lo detecta un parser SQL).
+- **`check-conflicts.js`** compara cada `ON CONFLICT (cols)` contra los índices únicos declarados. Previene el error `42P10`, que es fácil de introducir al escribir un índice de expresión (`lower(col)`) y usar `ON CONFLICT (col)`.
+
+Requieren `pgsql-parser` instalado (`npm i --no-save pgsql-parser`). Son sólo para desarrollo: no forman parte del bundle ni del deploy.
+
+## Si un archivo falla a mitad de camino
+
+1. Pegame el error tal cual (`ERROR: … LINE … HINT`).
+2. Mientras tanto, **no** re-ejecutes el archivo completo si falló en el medio: primero hay que ver qué alcanzó a aplicarse.
+3. Los archivos están escritos para ser re-ejecutables (`if not exists`, `drop trigger if exists`, `create or replace`), así que recargar uno ya aplicado es seguro.
+
+### Recargas necesarias por correcciones posteriores
+
+| Archivo | Motivo | ¿Urgente? |
+|---|---|---|
+| `0004_events.sql` | El índice `draw_sources_code_uk` cambió de `lower(code)` a `code`; incluye el `drop index` para que la recarga tome efecto | **Sí**, sin esto `0015_seed.sql` falla con `42P10` |
+
+## Decisión de diseño que conviene tener presente al cargar
 
 - **Toda escritura de negocio pasa por RPC.** Las tablas de eventos, números, reservas, resultados, roles, auditoría y configuración **no tienen** `INSERT`/`UPDATE` para los clientes. Si algo "no se puede guardar" desde el frontend, es por diseño: hay que llamar la RPC.
 - **`event_numbers`: la columna `reservation_id` no se otorga** (grant por columna). Un participante ve que el 25 está `PAID`, pero no quién lo tiene. Para leer el grid, usar la vista `public_event_numbers`.
