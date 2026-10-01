@@ -15,23 +15,24 @@ Los archivos están escritos para ser razonablemente re-ejecutables (los enums y
 
 | # | Archivo | Qué hace |
 |---|---|---|
-| 0001 | `enums` | Esquemas `private`/`extensions`, `pgcrypto`, enums del dominio, trigger `updated_at` |
+| 0001 | `enums` | Esquemas `private`/`extensions`, `pgcrypto`, 15 enums del dominio, trigger `updated_at` |
 | 0002 | `tenancy` | `profiles`, `merchants`, `merchant_members`, RBAC (`roles`, `permissions`, `role_permissions`, `member_permissions`) |
-| 0003 | `settings` | `system_settings`, `merchant_settings` |
+| 0003 | `settings` | `system_settings`, `merchant_settings` + `fn_effective_setting` (techo global) |
 | 0004 | `events` | `draw_sources`, `events`, `prizes`, `event_numbers` + triggers de inmutabilidad y transiciones |
-| 0005 | `reservations` | `reservations`, `reservation_numbers`, `payment_receipts` |
+| 0005 | `reservations` | `reservations`, `reservation_numbers` (ledger), `payment_receipts` |
 | 0006 | `results` | `draw_results`, `event_winners` |
-| 0007 | `terms_notifications_audit` | `terms_versions`, `terms_acceptances`, `notifications`, `audit_logs`, `security_blocks` |
+| 0007 | `terms_notifications_audit` | `terms_versions`, `terms_acceptances`, `notifications`, `audit_logs`, `security_blocks` + **FK diferidas** |
 | 0008 | `helpers` | Funciones de autorización en el esquema `private` (no expuesto a la API) |
-| 0009 | `rls` | `enable row level security` + **todas** las policies + vistas públicas |
+| 0009 | `rls` | `enable row level security` + **todas** las policies + vistas públicas + verificación |
 | 0010 | `grants` | Permisos por verbo: qué puede escribir el cliente y qué **sólo** por RPC |
-| 0011 | `rpc_reservations` | `reservation_create` (CAS atómico), cancelar, expirar, comprobantes, revisión |
-| 0012 | `rpc_events` | Alta/edición/publicación/cierre/cancelación de eventos y premios |
+| 0011 | `rpc_reservations` | `reservation_create` (CAS atómico), expiración, cancelación, comprobantes, revisión |
+| 0012 | `rpc_events` | Alta/edición/publicación/cierre/cancelación, premios y aceptación de términos |
 | 0013 | `rpc_admin` | OWNER: comercios, asignación de MERCHANT, settings, staff, bloqueos |
 | 0014 | `rpc_draw` | Resultado del sorteo (`MANUAL`, `RANDOM_SEEDED`, `EXTERNAL_LOTTERY`) y ganadores |
-| 0015 | `seed` | Roles, permisos, settings, loterías, textos legales de plantilla, **OWNER** |
-| 0016 | `storage` | Buckets `receipts` (privado) y `public-assets`, con policies de Storage |
-| 0017 | `cron` | `pg_cron`: expiración de reservas, sincronización de estados, purgas |
+| 0015 | `seed` | Roles, permisos, configuración global, loterías, textos legales de plantilla, **OWNER** |
+| 0016 | `storage_cron` | Buckets + policies de Storage, jobs de `pg_cron` y verificación final |
+
+Total: **23 tablas** (+5 vistas públicas), ~15 enums y ~60 funciones.
 
 ## Antes de cargar: configuración del proyecto
 
@@ -105,3 +106,14 @@ El mensaje de error completo (`ERROR: ...` con `LINE` y `HINT`), y el nombre del
 ## Lo que viene después de esta tanda
 
 Tests de RLS y de concurrencia en `supabase/tests/`: los 12 casos críticos (§20 del documento de arquitectura), incluyendo la prueba de dos reservas simultáneas sobre el mismo número. Esos tests son la garantía real de que la seguridad quedó bien, y son el paso siguiente a que las migraciones carguen sin error.
+
+## Decisiones de diseño que conviene tener presentes al cargar
+
+- **Toda escritura de negocio pasa por RPC.** Las tablas de eventos, números, reservas, resultados, roles, auditoría y configuración **no tienen** `INSERT`/`UPDATE` para los clientes. Si algo "no se puede guardar" desde el frontend, es por diseño: hay que llamar la RPC.
+- **`event_numbers`: la columna `reservation_id` no se otorga** (grant por columna). Un participante ve que el 25 está `PAID`, pero no quién lo tiene. Para leer el grid, usar la vista `public_event_numbers`.
+- **El sorteo aleatorio es de un solo tiro.** `draw_results` tiene `UNIQUE(event_id)` y no admite `UPDATE`/`DELETE` para clientes. Si el resultado no convence, la salida es cancelar el evento (auditado), no reintentar.
+- **El seed lo genera el servidor.** La RPC ignora cualquier seed o número que mande el cliente en modo `RANDOM_SEEDED`. La fórmula y el seed quedan publicados para que cualquiera verifique el resultado.
+- **Los holds vencidos se liberan solos.** `reservations_expire_stale()` corre por `pg_cron` **y** se invoca de forma defensiva dentro de las RPC, así que el sistema es correcto incluso si `pg_cron` no está activo.
+- **Un usuario anónimo no se borra automáticamente.** `admin_anonymous_retention_report()` dice cuántos candidatos hay; borrarlos es una decisión explícita del OWNER (borrar usuarios de `auth.users` es irreversible).
+- **El comerciante no puede aflojar un techo global:** `merchant_set_setting` **rechaza** con `SETTING_EXCEEDS_GLOBAL_LIMIT`, no recorta en silencio.
+- **Los textos legales del seed son plantillas** marcadas como `1.0-draft` / "REQUIERE REVISIÓN LEGAL". La legalidad se revisa después (confirmado por el OWNER). El sistema registra `legal_status` y no opina.

@@ -1095,18 +1095,23 @@ Un sorteo "random del sistema" no puede ser una caja negra: si el comerciante pu
 2. **Es de un solo tiro.** `draw_results` tiene `UNIQUE(event_id)` y no hay `UPDATE` ni `DELETE` para clientes: el comerciante obtiene **exactamente un** resultado. Si no le gusta, la única salida es cancelar el evento, que queda auditado y visible. Sin reintentos no hay *grinding*.
 3. **La derivación es reproducible.** Se guardan `seed`, `algorithm`, los snapshots del rango y el `computed_number`, así que cualquier participante puede recalcular el ganador y comprobar que no se eligió después.
 
-Fórmula exacta (guardada en `algorithm = 'SHA256_MOD60_V1'`):
+Fórmula exacta (guardada en `algorithm = 'SHA256_MOD60_PAID_V1'`). Se sortea **entre los números pagados**, que es la semántica natural de una rifa:
 
 ```text
-seed          = gen_random_bytes(32)                     -- criptográfico, del servidor
-h             = sha256_hex(seed || ':' || event_id)      -- 64 caracteres hex
-u             = ('x' || substr(h, 1, 15))::bit(60)::bigint
-computed      = numbers_from + (u % (numbers_to - numbers_from + 1))
+pagados   = [lista de números con status PAID, ordenada ascendente]
+seed      = gen_random_bytes(32)                    -- criptográfico, del servidor
+h         = sha256_hex(seed || ':' || event_id)     -- 64 caracteres hex
+u         = ('x' || substr(h, 1, 15))::bit(60)::bigint
+índice    = (u % count(pagados)) + 1                 -- 1-based
+ganador   = pagados[índice]
 ```
 
-Detalle de por qué 15 dígitos hex y no 8: 15 caracteres hex son 60 bits, que **siempre entran en un `bigint` con signo**. Así se evita la ambigüedad de interpretación con signo que tiene `bit(32)::int`, y el resultado es determinista en cualquier PostgreSQL.
+Dos decisiones de por qué así y no de otra forma:
 
-Se expone en la UI pública el bloque "verificá el sorteo": seed, fórmula, número resultante y la lista de números pagados al momento del cierre, para que cualquiera reproduzca el cálculo.
+1. **Entre los pagados, no entre todo el rango.** Sortear sobre 1..500 cuando sólo 137 están vendidos daría un ganador inexistente la mayoría de las veces y obligaría a re-sortear. Entre los pagados, **siempre hay ganador** y siempre es alguien que efectivamente participó.
+2. **15 dígitos hex y no 8.** 15 caracteres hex son 60 bits, que **siempre entran en un `bigint` con signo**. Así se evita la ambigüedad de interpretación con signo que tiene `bit(32)::int`, y el resultado es determinista en cualquier PostgreSQL.
+
+Se expone en la UI pública el bloque "verificá el sorteo": seed, fórmula, la lista de números pagados al momento del cierre y el número resultante, para que cualquiera reproduzca el cálculo.
 
 **Mejora opcional (D13, no bloquea el MVP):** *commit-reveal* completo. Al cerrar el evento se publica `sha256(seed || event_id)` (compromiso) y recién al sortear se revela el seed. Aporta la garantía adicional de que el seed existía **antes** del cierre. Las columnas `seed_commitment` y `revealed_at` ya quedan en `draw_results` para poder activarlo sin migración de esquema.
 
