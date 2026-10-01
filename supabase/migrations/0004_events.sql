@@ -25,7 +25,15 @@ create table if not exists public.draw_sources (
   constraint draw_sources_code_format check (code ~ '^[A-Z0-9_]{3,40}$')
 );
 
-create unique index if not exists draw_sources_code_uk on public.draw_sources (lower(code));
+-- El código es único. El índice va sobre la COLUMNA y no sobre lower(code):
+--  1) el CHECK draw_sources_code_format ya obliga a mayúsculas, así que lower()
+--     era redundante;
+--  2) un índice de expresión NO respalda "ON CONFLICT (code)", lo que producía
+--     el error 42P10 en 0015_seed.sql y en admin_draw_source_upsert.
+-- El DROP es necesario para que volver a ejecutar este archivo reemplace el
+-- índice anterior (si no, "if not exists" lo saltearía y el bug seguiría).
+drop index if exists public.draw_sources_code_uk;
+create unique index if not exists draw_sources_code_uk on public.draw_sources (code);
 create index if not exists draw_sources_active_idx on public.draw_sources (is_active, sort_order);
 
 -- ---------------------------------------------------------------------------
