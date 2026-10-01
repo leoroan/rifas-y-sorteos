@@ -216,6 +216,8 @@ create index if not exists merchant_members_merchant_idx on public.merchant_memb
 drop trigger if exists merchant_members_set_updated_at on public.merchant_members;
 create trigger merchant_members_set_updated_at
   before update on public.merchant_members
+  for each row execute function private.set_updated_at();
+
 -- ---------------------------------------------------------------------------
 -- RBAC: catálogo de roles, permisos y su matriz por defecto.
 -- Son datos semilla (0015_seed.sql), no configurables por clientes.
@@ -256,4 +258,3 @@ comment on table public.member_permissions is
 
 create index if not exists member_permissions_code_idx on public.member_permissions (permission_code);
 create index if not exists role_permissions_perm_idx   on public.role_permissions (permission_code);
-  for each row execute function private.set_updated_at();

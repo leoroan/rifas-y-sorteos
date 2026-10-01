@@ -101,7 +101,7 @@ security definer
 set search_path = ''
 as $$
 declare
-  v_n int := 0;
+  v_open int := 0;
 begin
   -- PUBLISHED -> OPEN cuando empezó la ventana.
   update public.events e
@@ -109,7 +109,7 @@ begin
    where e.status = 'PUBLISHED'
      and now() >= e.starts_at
      and now() <= e.participation_ends_at;
-  get diagnostics v_n = row_count;
+  get diagnostics v_open = row_count;
 
   -- OPEN -> CLOSED cuando terminó la ventana.
   update public.events e
@@ -117,7 +117,7 @@ begin
    where e.status = 'OPEN'
      and now() > e.participation_ends_at;
 
-  return v_n;
+  return v_open;
 end $$;
 
 -- Cierra las reservas cuya revisión se venció SIN castigar al participante:

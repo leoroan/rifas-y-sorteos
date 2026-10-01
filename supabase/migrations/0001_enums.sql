@@ -17,7 +17,22 @@ do $$
 begin
   if not exists (select 1 from pg_extension where extname = 'pgcrypto') then
     create extension pgcrypto with schema extensions;
+  else
+    -- Normalizamos: TODO el código del proyecto llama extensions.digest() y
+    -- extensions.gen_random_bytes(). Si pgcrypto quedó instalado en otro
+    -- esquema (p. ej. public), lo movemos para que esas llamadas resuelvan.
+    -- Es seguro acá porque es un proyecto nuevo, sin objetos que dependan de él.
+    if exists (
+      select 1
+        from pg_extension e
+        join pg_namespace n on n.oid = e.extnamespace
+       where e.extname = 'pgcrypto' and n.nspname <> 'extensions'
+    ) then
+      alter extension pgcrypto set schema extensions;
+    end if;
   end if;
+exception when others then
+  raise exception 'No se pudo dejar pgcrypto en el esquema extensions: %  Ejecuta a mano: ALTER EXTENSION pgcrypto SET SCHEMA extensions;', sqlerrm;
 end $$;
 
 -- ---------------------------------------------------------------------------
