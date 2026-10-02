@@ -7,7 +7,7 @@ import { EmptyState } from '../../components/ui/EmptyState.jsx'
 import { Card, CardHeader } from '../../components/ui/Card.jsx'
 import { Badge } from '../../components/ui/Badge.jsx'
 import { Button } from '../../components/ui/Button.jsx'
-import { useAuth } from '../../app/providers/AuthProvider.jsx'
+
 import { ReservePanel } from '../reservations/ReservePanel.jsx'
 import { EVENT_STATUS } from '../../constants/statuses.js'
 
@@ -30,7 +30,6 @@ function Stat({ label, value }) {
 
 export function EventPage({ resultado: _resultado = false }) {
   const { slug } = useParams()
-  const { user } = useAuth()
 
   const { data: event, isLoading, error } = useQuery({
     queryKey: ['event', slug],
