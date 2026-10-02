@@ -48,3 +48,14 @@ export async function listSystemSettings() {
   if (error) throw error
   return data
 }
+
+
+export async function listPendingInvites() {
+  const { data, error } = await supabase
+    .from('merchant_invites')
+    .select('id, merchant_id, email, role, status, created_at, merchants:merchant_id(name)')
+    .eq('status', 'PENDING')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data
+}
