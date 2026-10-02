@@ -36,6 +36,9 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      - name: Lint (no-undef y demas: un import faltante explota en runtime, no en build)
+        run: npm run lint
+
       - name: Build
         run: npm run build
         env:

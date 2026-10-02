@@ -1,4 +1,4 @@
-import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { HashRouter, Route, Routes } from 'react-router-dom'
 import { AppLayout } from '../layout/AppLayout.jsx'
 import { RedirectIfLoggedIn, RequireAuth, RequireOwner } from './guards.jsx'
 import { FullPageLoader } from '../../components/ui/LoadingState.jsx'

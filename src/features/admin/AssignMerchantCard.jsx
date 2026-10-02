@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { useAuth } from '../../app/providers/AuthProvider.jsx'
 import { findProfileByEmail } from '../../services/supabase/queries/admin.js'
 import { callRpc } from '../../lib/rpc.js'
 import { showRpcError, showSuccess } from '../../lib/sweetalert.js'
@@ -9,6 +10,7 @@ import { Input } from '../../components/ui/Input.jsx'
 
 export function AssignMerchantCard({ merchants }) {
   const qc = useQueryClient()
+  const { refreshProfile } = useAuth()
   const [merchantId, setMerchantId] = useState('')
   const [email, setEmail] = useState('')
   const [error, setError] = useState(null)
@@ -34,6 +36,8 @@ export function AssignMerchantCard({ merchants }) {
       }
       setEmail('')
       qc.invalidateQueries({ queryKey: ['merchants'] })
+      qc.invalidateQueries({ queryKey: ['merchant-invites'] })
+      refreshProfile()
     } catch (err) {
       showRpcError(err, 'No se pudo asignar')
     } finally {
