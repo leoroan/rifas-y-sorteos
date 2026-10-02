@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { supabase } from '../../services/supabase/client.js'
 import { Link, useParams } from 'react-router-dom'
 import { getEventMerchant, getEventNumbersSummary, getEventPrizes, getPublicEventBySlug } from '../../services/supabase/queries/events.js'
 import { FullPageLoader } from '../../components/ui/LoadingState.jsx'
@@ -7,6 +8,7 @@ import { Card, CardHeader } from '../../components/ui/Card.jsx'
 import { Badge } from '../../components/ui/Badge.jsx'
 import { Button } from '../../components/ui/Button.jsx'
 import { useAuth } from '../../app/providers/AuthProvider.jsx'
+import { ReservePanel } from '../reservations/ReservePanel.jsx'
 import { EVENT_STATUS } from '../../constants/statuses.js'
 
 const STATUS_TONE = {
@@ -135,17 +137,9 @@ export function EventPage({ resultado: _resultado = false }) {
         </p>
       </Card>
 
-      {open && (
-        <div className="sticky bottom-4">
-          <Card padding="p-3">
-            <Link to={`/e/${event.slug}`} className="block">
-              <Button size="lg" className="w-full">
-                {user ? 'Elegir números' : 'Participar (sin registrarte)'}
-              </Button>
-            </Link>
-          </Card>
-        </div>
-      )}
+      {open && <ReservePanel event={event} merchant={merchant} />}
+
+      {drawn && <WinnersCard event={event} />}
 
       {!open && !drawn && (
         <EmptyState
@@ -154,5 +148,73 @@ export function EventPage({ resultado: _resultado = false }) {
         />
       )}
     </div>
+  )
+}
+
+
+function WinnersCard({ event }) {
+  const { data: winners } = useQuery({
+    queryKey: ['event-winners', event.id],
+    queryFn: async () => {
+      const [w, prizes] = await Promise.all([
+        supabase
+          .from('public_event_winners')
+          .select('*')
+          .eq('event_id', event.id)
+          .order('position', { ascending: true })
+          .then(({ data, error }) => { if (error) throw error; return data }),
+        supabase
+          .from('public_prizes')
+          .select('id, title')
+          .eq('event_id', event.id)
+          .then(({ data, error }) => { if (error) throw error; return data }),
+      ])
+      const byPrize = Object.fromEntries((prizes || []).map((p) => [p.id, p.title]))
+      return (w || []).map((x) => ({ ...x, prize_title: byPrize[x.prize_id] ?? 'Premio' }))
+    },
+  })
+
+  const { data: drawResult } = useQuery({
+    queryKey: ['draw-result', event.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('draw_results')
+        .select('winner_method_snapshot, algorithm, seed, computed_number, justification, evidence_url, recorded_at')
+        .eq('event_id', event.id)
+        .maybeSingle()
+      if (error) throw error
+      return data
+    },
+  })
+
+  return (
+    <Card>
+      <CardHeader title="Ganadores" subtitle={`Sorteo finalizado`} />
+      {winners?.length ? (
+        <ul className="divide-y divide-ink-100">
+          {winners.map((w) => (
+            <li key={w.position} className="flex items-center justify-between gap-3 py-3">
+              <div>
+                <p className="font-medium text-ink-900">{w.prize_title}</p>
+                <p className="text-sm text-ink-500">{w.winner_display ?? 'Participante'}</p>
+              </div>
+              <span className="tnum rounded-md border border-winner-300 bg-winner-50 px-3 py-1 font-bold text-winner-700">
+                {w.number}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-ink-500">Cargando ganadores…</p>
+      )}
+
+      {drawResult?.seed && (
+        <div className="mt-4 rounded-md bg-ink-50 p-3 text-xs text-ink-600">
+          <p className="mb-1 font-medium text-ink-800">Verificá el sorteo</p>
+          <p className="break-all">Seed: {drawResult.seed}</p>
+          <p className="mt-1">Algoritmo: {drawResult.algorithm}</p>
+        </div>
+      )}
+    </Card>
   )
 }
