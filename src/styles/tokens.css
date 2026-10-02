@@ -1,0 +1,83 @@
+@theme {
+  /*
+   * Sistema visual: UN neutro dominante + UN acento + colores semánticos
+   * exclusivamente para estados. Sin gradientes decorativos, sin 20 colores.
+   */
+
+  /* Neutro (tinta) */
+  --color-ink-50:  #f6f8fa;
+  --color-ink-100: #eceff3;
+  --color-ink-200: #d6dce3;
+  --color-ink-300: #b3bdca;
+  --color-ink-400: #8694a6;
+  --color-ink-500: #5d6b80;
+  --color-ink-600: #455163;
+  --color-ink-700: #354050;
+  --color-ink-800: #232c3b;
+  --color-ink-900: #161c27;
+  --color-ink-950: #0b0f16;
+
+  /* Superficie (fondo) */
+  --color-paper-50:  #fafbfc;
+  --color-paper-100: #ffffff;
+  --color-paper-200: #f2f4f7;
+
+  /* Acento (uno solo, usado con moderación) */
+  --color-accent-50:  #eef4ff;
+  --color-accent-100: #dbe7ff;
+  --color-accent-200: #bdd3ff;
+  --color-accent-300: #8fb4ff;
+  --color-accent-400: #5b8dff;
+  --color-accent-500: #3466f6;
+  --color-accent-600: #1f4ddb;
+  --color-accent-700: #1c40b0;
+  --color-accent-800: #1d3a8c;
+  --color-accent-900: #1d3470;
+
+  /* Estados (semánticos, inequívocos) */
+  --color-available-50:  #effaf2;
+  --color-available-500: #1fae4f;
+  --color-available-700: #15793a;
+
+  --color-reserved-50:  #fff7e8;
+  --color-reserved-500: #e39a0a;
+  --color-reserved-700: #a96f06;
+
+  --color-submitted-50:  #eef3ff;
+  --color-submitted-500: #4f6fe4;
+  --color-submitted-700: #3a52b5;
+
+  --color-paid-50:  #e9f8f3;
+  --color-paid-500: #0d9d7a;
+  --color-paid-700: #0a6f57;
+
+  --color-winner-50:  #f7eefb;
+  --color-winner-500: #a24cd6;
+  --color-winner-700: #7a35a6;
+
+  --color-error-50:  #fdeeee;
+  --color-error-500: #dd3a3a;
+  --color-error-700: #b02c2c;
+
+  --color-warn-50:  #fff7e8;
+  --color-warn-500: #e39a0a;
+  --color-warn-700: #a96f06;
+
+  /* Tipografía: system stack, con cifras tabulares para los números */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-numeric: "SF Mono", ui-monospace, Menlo, Consolas, "Roboto Mono", monospace;
+
+  /* Radios: contenidos, nada extremo */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  /* Espaciado base (Tailwind lo genera, esto documenta la escala) */
+  --spacing-field: 0.75rem;
+  --spacing-card: 1rem;
+
+  /* Sombras: discretas */
+  --shadow-card: 0 1px 2px rgb(11 15 22 / 0.06);
+  --shadow-pop: 0 6px 24px -6px rgb(11 15 22 / 0.18);
+}

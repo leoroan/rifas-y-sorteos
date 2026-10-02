@@ -1,0 +1,42 @@
+/*
+ * SweetAlert2 con la identidad de la app: se usa para confirmaciones
+ * destructivas, errores de RPC y éxitos de operaciones críticas. No para
+ * validación de formularios ni estados de carga (eso va inline).
+ */
+
+.swal2-popup {
+  border-radius: var(--radius-lg) !important;
+  font-family: var(--font-sans) !important;
+  box-shadow: var(--shadow-pop) !important;
+}
+
+.swal2-title {
+  color: var(--color-ink-900) !important;
+  font-size: 1.15rem !important;
+  font-weight: 650 !important;
+}
+
+.swal2-html-container {
+  color: var(--color-ink-600) !important;
+}
+
+.swal2-confirm,
+.swal2-deny,
+.swal2-cancel {
+  border-radius: var(--radius-md) !important;
+  font-weight: 600 !important;
+  padding: 0.6rem 1.1rem !important;
+}
+
+.swal2-confirm {
+  background: var(--color-accent-600) !important;
+}
+
+.swal2-deny {
+  background: var(--color-error-500) !important;
+}
+
+.swal2-cancel {
+  background: var(--color-ink-200) !important;
+  color: var(--color-ink-800) !important;
+}

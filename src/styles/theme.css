@@ -1,0 +1,51 @@
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-paper-50 text-ink-900 font-sans antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04";
+  }
+
+  ::selection {
+    background: var(--color-accent-100);
+  }
+
+  /* Foco siempre visible: accesibilidad, no decoración */
+  :focus-visible {
+    outline: 2px solid var(--color-accent-500);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  input,
+  button,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  /* Los números del sorteo son dato: cifras tabulares para que se alineen */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  .btn-focus {
+    @apply focus-visible:outline-2 focus-visible:outline-offset-2;
+  }
+}
