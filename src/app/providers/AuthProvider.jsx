@@ -12,6 +12,7 @@ const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [profile, setProfile] = useState(null)
+  const [memberships, setMemberships] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -35,9 +36,11 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (!userId) {
       setProfile(null)
+      setMemberships([])
       return
     }
     let cancelled = false
+
     supabase
       .from('profiles')
       .select('id, display_name, email, is_anonymous, platform_role, status')
@@ -46,6 +49,15 @@ export function AuthProvider({ children }) {
       .then(({ data }) => {
         if (!cancelled) setProfile(data ?? null)
       })
+
+    supabase
+      .from('merchant_members')
+      .select('merchant_id, role, status')
+      .eq('status', 'ACTIVE')
+      .then(({ data }) => {
+        if (!cancelled) setMemberships(data ?? [])
+      })
+
     return () => {
       cancelled = true
     }
@@ -117,7 +129,16 @@ export function AuthProvider({ children }) {
     loading,
     isAnonymous: session?.user?.is_anonymous ?? profile?.is_anonymous ?? false,
     isOwner: profile?.platform_role === 'OWNER',
-    isMerchant: profile?.platform_role === 'OWNER' || !!profile?.merchant_count,
+    isMerchant: memberships.some((m) => m.role === 'MERCHANT'),
+    isStaff: memberships.length > 0,
+    roleLabel:
+      profile?.platform_role === 'OWNER'
+        ? 'Propietario'
+        : memberships.some((m) => m.role === 'MERCHANT')
+          ? 'Comerciante'
+          : memberships.some((m) => m.role === 'COLLABORATOR')
+            ? 'Colaborador'
+            : 'Participante',
     refreshProfile,
     signInAnonymously,
     signUp,

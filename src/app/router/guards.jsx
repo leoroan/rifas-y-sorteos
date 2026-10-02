@@ -25,8 +25,11 @@ export function RequireOwner() {
 }
 
 export function RedirectIfLoggedIn() {
-  const { user, loading } = useAuth()
+  const { user, loading, isOwner, isStaff } = useAuth()
   if (loading) return <FullPageLoader />
-  if (user) return <Navigate to="/mis-participaciones" replace />
+  if (user) {
+    const dest = isOwner ? '/admin' : isStaff ? '/panel' : '/mis-participaciones'
+    return <Navigate to={dest} replace />
+  }
   return <Outlet />
 }
