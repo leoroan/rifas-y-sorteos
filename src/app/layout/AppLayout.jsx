@@ -21,7 +21,7 @@ function NavItem({ to, children, end = false }) {
 }
 
 export function AppLayout() {
-  const { user, profile, isAnonymous, isOwner, signOut } = useAuth()
+  const { user, profile, isAnonymous, isOwner, isStaff, roleLabel, signOut } = useAuth()
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -39,6 +39,7 @@ export function AppLayout() {
               Inicio
             </NavItem>
             {user && <NavItem to="/mis-participaciones">Mis participaciones</NavItem>}
+            {(isStaff || isOwner) && <NavItem to="/panel">Panel</NavItem>}
             {isOwner && <NavItem to="/admin">Admin</NavItem>}
           </nav>
 
@@ -50,6 +51,7 @@ export function AppLayout() {
                     <Badge tone="accent">Crear cuenta</Badge>
                   </Link>
                 )}
+                <Badge tone={isOwner ? 'accent' : 'neutral'}>{roleLabel}</Badge>
                 <span className="hidden max-w-40 truncate text-sm text-ink-600 sm:inline">
                   {profile?.display_name || profile?.email || 'Invitado'}
                 </span>
