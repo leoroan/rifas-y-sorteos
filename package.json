@@ -9,7 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "sql:check": "node scripts/validate-sql.js supabase/migrations/*.sql && node scripts/check-conflicts.js supabase/migrations/*.sql"
+    "sql:check": "node scripts/validate-sql.cjs supabase/migrations/*.sql && node scripts/check-conflicts.cjs supabase/migrations/*.sql"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",

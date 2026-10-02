@@ -22,12 +22,16 @@ export function AssignMerchantCard({ merchants }) {
     setBusy(true)
     try {
       const profile = await findProfileByEmail(email)
-      if (!profile) {
-        setError('No hay un usuario registrado con ese email.')
-        return
+      if (profile) {
+        await callRpc('admin_assign_merchant', { p_profile_id: profile.id, p_merchant_id: merchantId })
+        showSuccess('Comerciante asignado', `${profile.email} ya puede administrar el comercio.`)
+      } else {
+        await callRpc('staff_invite', { p_merchant_id: merchantId, p_email: email.trim(), p_role: 'MERCHANT' })
+        showSuccess(
+          'Invitación enviada',
+          `${email.trim()} va a poder administrar el comercio apenas se registre con ese email.`,
+        )
       }
-      await callRpc('admin_assign_merchant', { p_profile_id: profile.id, p_merchant_id: merchantId })
-      showSuccess('Comerciante asignado', `${profile.email} ya puede administrar el comercio.`)
       setEmail('')
       qc.invalidateQueries({ queryKey: ['merchants'] })
     } catch (err) {
@@ -62,7 +66,7 @@ export function AssignMerchantCard({ merchants }) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="comerciante@ejemplo.com"
-          hint="Tiene que tener una cuenta registrada."
+          hint="Si no está registrado, se le manda una invitación: entra apenas se registre."
           required
         />
         {error && <p className="text-sm text-error-500" role="alert">{error}</p>}

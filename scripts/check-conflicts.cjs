@@ -9,7 +9,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { splitStatements } = require('./validate-sql.js');
+const { splitStatements } = require('./validate-sql.cjs');
 
 // Tablas gestionadas por Supabase: no conocemos sus constraints, se omiten.
 const TABLAS_EXTERNAS = new Set(['storage.buckets', 'storage.objects']);

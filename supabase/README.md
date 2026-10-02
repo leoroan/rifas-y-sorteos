@@ -31,6 +31,7 @@ Los archivos están escritos para ser razonablemente re-ejecutables (los enums y
 | 0014 | `rpc_draw` | Resultado del sorteo (`MANUAL`, `RANDOM_SEEDED`, `EXTERNAL_LOTTERY`) y ganadores |
 | 0015 | `seed` | Roles, permisos, configuración global, loterías, textos legales de plantilla, **OWNER** |
 | 0016 | `storage_cron` | Buckets + policies de Storage, jobs de `pg_cron` y verificación final |
+| 0017 | `merchant_invites` | Invitar staff por email aunque no esté registrado + activación automática al registrarse |
 
 Total: **23 tablas** (+5 vistas públicas), ~15 enums y ~60 funciones.
 
