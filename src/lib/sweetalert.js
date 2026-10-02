@@ -43,9 +43,39 @@ const RPC_MESSAGES = {
   PERMISSION_ABOVE_CEILING: 'Ese permiso no es delegable.',
 }
 
+/*
+ * Restricciones y triggers de la base que llegan como error crudo de Postgres.
+ * Sin esto, el usuario ve "new row for relation ... violates check constraint ...",
+ * que no le dice nada. La base es la que manda: nosotros sólo traducimos.
+ */
+const CONSTRAINT_MESSAGES = {
+  events_winner_rule_required:
+    'Elegiste lotería de referencia: falta definir cómo se calcula el número ganador.',
+  events_winner_method_valid: 'El mecanismo de sorteo elegido no es válido.',
+  events_numbers_total: 'El máximo es 5000 números por evento.',
+  numbers_locked: 'El rango de números ya no se puede modificar (el evento está publicado).',
+  terms_locked: 'Las condiciones del evento no se pueden modificar una vez publicado.',
+  invalid_event_transition: 'Ese cambio de estado no está permitido.',
+  cancellation_reason_required: 'Para cancelar el evento hace falta un motivo.',
+  payment_receipts_not_self_reviewed: 'No podés revisar tu propio comprobante.',
+  platform_role_immutable: 'El rol de plataforma no se puede cambiar desde la aplicación.',
+  merchant_status_owner_only: 'Sólo el propietario de la plataforma cambia el estado de un comercio.',
+}
+
+function constraintMessage(msg) {
+  if (!msg) return null
+  const low = String(msg).toLowerCase()
+  for (const [name, text] of Object.entries(CONSTRAINT_MESSAGES)) {
+    if (low.includes(name.toLowerCase())) return text
+  }
+  return null
+}
+
 export function showRpcError(error, fallbackTitle = 'No se pudo completar') {
   const isRpc = error instanceof RpcError || error?.code
-  const title = isRpc && RPC_MESSAGES[error.code] ? RPC_MESSAGES[error.code] : error?.message || fallbackTitle
+  const byCode = isRpc && RPC_MESSAGES[error.code] ? RPC_MESSAGES[error.code] : null
+  const byConstraint = constraintMessage(error?.message)
+  const title = byCode || byConstraint || error?.message || fallbackTitle
   return Swal.fire({
     ...base,
     icon: 'error',
