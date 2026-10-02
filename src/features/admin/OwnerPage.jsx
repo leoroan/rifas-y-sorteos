@@ -10,6 +10,7 @@ import { LoadingState } from '../../components/ui/LoadingState.jsx'
 import { EmptyState } from '../../components/ui/EmptyState.jsx'
 import { CreateMerchantCard } from './CreateMerchantCard.jsx'
 import { AssignMerchantCard } from './AssignMerchantCard.jsx'
+import { DrawSourcesCard } from './DrawSourcesCard.jsx'
 
 export function OwnerPage() {
   const { isOwner } = useAuth()
@@ -61,6 +62,8 @@ export function OwnerPage() {
       </Card>
 
       <InvitesCard invites={invites || []} />
+
+      <DrawSourcesCard />
     </div>
   )
 }

@@ -34,7 +34,7 @@ export async function listMerchantMembers(merchantId) {
 export async function listDrawSources() {
   const { data, error } = await supabase
     .from('draw_sources')
-    .select('id, code, name, kind, shifts, is_active')
+    .select('id, code, name, kind, jurisdiction, shifts, timezone, is_active, sort_order')
     .order('sort_order', { ascending: true })
   if (error) throw error
   return data
