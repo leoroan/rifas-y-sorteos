@@ -8,6 +8,7 @@ import { Badge } from '../../components/ui/Badge.jsx'
 import { Button } from '../../components/ui/Button.jsx'
 import { Input } from '../../components/ui/Input.jsx'
 import { EVENT_STATUS } from '../../constants/statuses.js'
+import { ResultForm } from './ResultForm.jsx'
 
 function PublishButton({ event }) {
   const qc = useQueryClient()
@@ -110,6 +111,12 @@ export function EventManageCard({ event }) {
         </div>
         {isDraft && <PublishButton event={event} />}
       </div>
+
+      {event.status === EVENT_STATUS.CLOSED && (
+        <div className="mt-4 border-t border-ink-100 pt-4">
+          <ResultForm event={event} prizes={prizes} />
+        </div>
+      )}
 
       {isDraft && (
         <div className="mt-4 border-t border-ink-100 pt-4">

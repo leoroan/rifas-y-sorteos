@@ -32,6 +32,7 @@ Los archivos están escritos para ser razonablemente re-ejecutables (los enums y
 | 0015 | `seed` | Roles, permisos, configuración global, loterías, textos legales de plantilla, **OWNER** |
 | 0016 | `storage_cron` | Buckets + policies de Storage, jobs de `pg_cron` y verificación final |
 | 0017 | `merchant_invites` | Invitar staff por email aunque no esté registrado + activación automática al registrarse |
+| 0018 | `manual_result` | Resultado a mano: un número ganador POR PREMIO y corrección mientras el evento siga CLOSED |
 
 Total: **23 tablas** (+5 vistas públicas), ~15 enums y ~60 funciones.
 

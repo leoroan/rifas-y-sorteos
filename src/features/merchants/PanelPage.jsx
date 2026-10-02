@@ -99,14 +99,18 @@ export function PanelPage() {
             <div className="space-y-3">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-400">Publicados</h3>
               {active.map((e) => (
-                <Card key={e.id}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-ink-900">{e.title}</p>
-                      <p className="text-sm text-ink-500">Números {e.numbers_from}–{e.numbers_to} · {e.status}</p>
+                e.status === EVENT_STATUS.CLOSED ? (
+                  <EventManageCard key={e.id} event={e} />
+                ) : (
+                  <Card key={e.id}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-ink-900">{e.title}</p>
+                        <p className="text-sm text-ink-500">Números {e.numbers_from}–{e.numbers_to} · {e.status}</p>
+                      </div>
                     </div>
-                  </div>
-                </Card>
+                  </Card>
+                )
               ))}
             </div>
           )}
