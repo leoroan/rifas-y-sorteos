@@ -71,6 +71,14 @@ export function AuthProvider({ children }) {
       .eq('id', userId)
       .maybeSingle()
     setProfile(data ?? null)
+
+    // También refresca las membresías, para que el menú (Panel/Admin)
+    // reaccione sin tener que cerrar sesión y volver a entrar.
+    const { data: mm } = await supabase
+      .from('merchant_members')
+      .select('merchant_id, role, status')
+      .eq('status', 'ACTIVE')
+    setMemberships(mm ?? [])
     return data
   }, [userId])
 

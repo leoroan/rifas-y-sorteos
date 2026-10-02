@@ -26,7 +26,7 @@ function Stat({ label, value }) {
   )
 }
 
-export function EventPage({ resultado = false }) {
+export function EventPage({ resultado: _resultado = false }) {
   const { slug } = useParams()
   const { user } = useAuth()
 
