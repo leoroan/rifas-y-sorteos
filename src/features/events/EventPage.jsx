@@ -9,6 +9,7 @@ import { Badge } from '../../components/ui/Badge.jsx'
 import { Button } from '../../components/ui/Button.jsx'
 
 import { ReservePanel } from '../reservations/ReservePanel.jsx'
+import { ShareEventButton } from '../../components/domain/ShareEventButton.jsx'
 import { EVENT_STATUS } from '../../constants/statuses.js'
 
 const STATUS_TONE = {
@@ -77,7 +78,8 @@ export function EventPage({ resultado: _resultado = false }) {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="mb-2 flex items-center gap-2">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <ShareEventButton event={event} variant="ghost" size="sm" />
             <Badge tone={STATUS_TONE[event.status] || 'neutral'}>
               {open ? 'Abierto' : drawn ? 'Finalizado' : event.status === EVENT_STATUS.CANCELLED ? 'Cancelado' : 'Cerrado'}
             </Badge>

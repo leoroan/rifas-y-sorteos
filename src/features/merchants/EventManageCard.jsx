@@ -9,6 +9,7 @@ import { Button } from '../../components/ui/Button.jsx'
 import { Input } from '../../components/ui/Input.jsx'
 import { EVENT_STATUS } from '../../constants/statuses.js'
 import { ResultForm } from './ResultForm.jsx'
+import { ShareEventButton } from '../../components/domain/ShareEventButton.jsx'
 
 function PublishButton({ event }) {
   const qc = useQueryClient()
@@ -109,7 +110,10 @@ export function EventManageCard({ event }) {
             )}
           </p>
         </div>
-        {isDraft && <PublishButton event={event} />}
+        <div className="flex flex-wrap items-center gap-2">
+          {isDraft && <PublishButton event={event} />}
+          {!isDraft && <ShareEventButton event={event} />}
+        </div>
       </div>
 
       {event.status === EVENT_STATUS.CLOSED && (

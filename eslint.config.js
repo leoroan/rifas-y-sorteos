@@ -35,6 +35,7 @@ export default [
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
         setInterval: 'readonly',
+        crypto: 'readonly',
         clearInterval: 'readonly',
       },
       parserOptions: {
