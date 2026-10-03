@@ -33,6 +33,7 @@ Los archivos están escritos para ser razonablemente re-ejecutables (los enums y
 | 0016 | `storage_cron` | Buckets + policies de Storage, jobs de `pg_cron` y verificación final |
 | 0017 | `merchant_invites` | Invitar staff por email aunque no esté registrado + activación automática al registrarse |
 | 0018 | `manual_result` | Resultado a mano: un número ganador POR PREMIO y corrección mientras el evento siga CLOSED |
+| 0019 | `registered_participation` | Participación registrada (Q1): ver público sin cuenta, reservar requiere registro |
 
 Total: **23 tablas** (+5 vistas públicas), ~15 enums y ~60 funciones.
 

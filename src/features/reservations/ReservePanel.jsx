@@ -30,7 +30,10 @@ const cellTone = {
  */
 export function ReservePanel({ event, merchant }) {
   const qc = useQueryClient()
-  const { user, isAnonymous, signInAnonymously } = useAuth()
+  const { user, isAnonymous } = useAuth()
+  // Q1: ver público sin cuenta, pero RESERVAR requiere registro (email).
+  // Los anónimos ven números y disponibilidad; para actuar deben registrarse.
+  const canReserve = !!user && !isAnonymous
 
   const [selected, setSelected] = useState(() => new Set())
   const [taken, setTaken] = useState(() => new Set())
@@ -71,6 +74,10 @@ export function ReservePanel({ event, merchant }) {
 
   function toggle(n) {
     setError(null)
+    if (!canReserve) {
+      setError('Para reservar números tenés que registrarte o iniciar sesión.')
+      return
+    }
     setSelected((prev) => {
       const next = new Set(prev)
       if (next.has(n.number)) {
@@ -92,10 +99,6 @@ export function ReservePanel({ event, merchant }) {
 
     setBusy(true)
     try {
-      if (!user) {
-        await signInAnonymously()
-      }
-
       await callRpc('terms_accept', {
         p_terms_version_id: terms.id,
         p_event_id: event.id,
@@ -231,6 +234,26 @@ export function ReservePanel({ event, merchant }) {
         </button>
       )}
 
+      {!canReserve ? (
+        <div className="mt-4 border-t border-ink-100 pt-4">
+          <div className="rounded-lg border border-accent-200 bg-accent-50 p-4 text-center">
+            <p className="font-semibold text-accent-900">
+              Para reservar tus números tenés que registrarte
+            </p>
+            <p className="mt-1 text-sm text-accent-800">
+              Podés ver los números y la disponibilidad sin cuenta, pero para participar necesitás una.
+            </p>
+            <div className="mt-3 flex justify-center gap-3">
+              <Link to="/registrarse">
+                <Button size="lg">Registrarme</Button>
+              </Link>
+              <Link to="/ingresar">
+                <Button size="lg" variant="secondary">Ya tengo cuenta</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : (
       <div className="mt-4 border-t border-ink-100 pt-4">
         {terms && (
           <details className="mb-3">
@@ -267,6 +290,7 @@ export function ReservePanel({ event, merchant }) {
           </span>
         </div>
       </div>
+      )}
     </Card>
   )
 }
