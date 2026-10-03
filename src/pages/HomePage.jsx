@@ -54,7 +54,7 @@ function Hero() {
             suben el comprobante, y vos definís el ganador — con evidencia y auditoría completa.
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <Link to="/ingresar">
+            <Link to="/solicitar">
               <Button size="lg" className="w-full sm:w-auto">Publicá tu sorteo</Button>
             </Link>
             <Link to="#sorteos" className="sm:w-auto">
