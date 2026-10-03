@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../../services/supabase/client.js'
+import { useAuth } from '../../app/providers/AuthProvider.jsx'
 import { Link, useParams } from 'react-router-dom'
 import { getEventMerchant, getEventNumbersSummary, getEventPrizes, getPublicEventBySlug } from '../../services/supabase/queries/events.js'
 import { FullPageLoader } from '../../components/ui/LoadingState.jsx'
@@ -55,6 +56,25 @@ export function EventPage({ resultado: _resultado = false }) {
     queryKey: ['event-merchant', event?.id],
     queryFn: () => getEventMerchant(event.id),
     enabled: !!event?.id,
+  })
+
+  const { user } = useAuth()
+
+  // Regla del prompt: quien es parte de un comercio NO participa en sus
+  // sorteos (pero sí en los de otros). La UI oculta la grilla y avisa; la RPC
+  // la bloquea igual como segunda barrera.
+  const { data: isStaff } = useQuery({
+    queryKey: ['is-staff-of-event', event?.id, user?.id],
+    enabled: !!user?.id && !!event?.merchant_id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('merchant_members')
+        .select('id')
+        .eq('profile_id', user.id)
+        .eq('merchant_id', event.merchant_id)
+        .maybeSingle()
+      return !!data
+    },
   })
 
   if (isLoading) return <FullPageLoader label="Cargando el sorteo…" />
@@ -146,13 +166,34 @@ export function EventPage({ resultado: _resultado = false }) {
         </p>
       </Card>
 
-      {open && <ReservePanel event={event} merchant={merchant} />}
+      {open && isStaff && (
+        <Card className="border-warn-200 bg-warn-50">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-warn-800">
+              Sos parte de este comercio, así que <strong>no podés participar en sus sorteos</strong>
+              (pero sí en los de otros comercios).
+            </p>
+            <Link to="/panel">
+              <Button variant="secondary" size="sm">Ver el panel</Button>
+            </Link>
+          </div>
+        </Card>
+      )}
+
+      {open && !isStaff && <ReservePanel event={event} merchant={merchant} />}
 
       {drawn && (
         <>
           <WinnersCard event={event} />
           <Card>
-            <NumbersGrid event={event} title="Números (el ganador está destacado)" />
+            <details>
+              <summary className="cursor-pointer text-sm font-medium text-ink-700">
+                Ver los números del sorteo (el ganador está destacado)
+              </summary>
+              <div className="mt-3">
+                <NumbersGrid event={event} title="" />
+              </div>
+            </details>
           </Card>
         </>
       )}
@@ -161,9 +202,16 @@ export function EventPage({ resultado: _resultado = false }) {
         <Card>
           <CardHeader
             title="La participación ya cerró"
-            subtitle="Ya no se pueden reservar números. Consultá los resultados cuando el comercio publique el sorteo."
+            subtitle="Ya no se pueden reservar números. Cuando el comercio publique el resultado, acá vas a ver los ganadores."
           />
-          <NumbersGrid event={event} title="Estado de los números al cierre" />
+          <details>
+            <summary className="cursor-pointer text-sm font-medium text-ink-700">
+              Ver el estado de los números al cierre
+            </summary>
+            <div className="mt-3">
+              <NumbersGrid event={event} title="" />
+            </div>
+          </details>
         </Card>
       )}
 

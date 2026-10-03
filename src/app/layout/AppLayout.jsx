@@ -76,9 +76,12 @@ function UserArea() {
           <Badge tone={isOwner ? 'accent' : 'neutral'} className="hidden sm:inline-flex">
             {roleLabel}
           </Badge>
-          <span className="hidden max-w-36 truncate text-sm text-ink-600 lg:inline">
+          <Link
+            to="/perfil"
+            className="hidden max-w-36 truncate text-sm font-medium text-ink-600 hover:text-accent-600 lg:inline"
+          >
             {profile?.display_name || profile?.email || 'Invitado'}
-          </span>
+          </Link>
           <Button variant="ghost" size="sm" onClick={() => signOut().catch(() => {})}>
             Salir
           </Button>
