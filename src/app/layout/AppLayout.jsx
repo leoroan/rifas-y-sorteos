@@ -22,9 +22,12 @@ const ICONS = {
 }
 
 const NAVS = [
-  { to: '/', label: 'Inicio', icon: ICONS.home, end: true, show: () => true },
-  { to: '/mis-participaciones', label: 'Participo', icon: ICONS.ticket, show: (u) => !!u.user },
-  { to: '/panel', label: 'Panel', icon: ICONS.store, show: (u) => u.isStaff || u.isOwner },
+  // Inicio siempre visible pero nunca se marca 'activo' (es redundante estando en home).
+  { to: '/', label: 'Inicio', icon: ICONS.home, end: true, show: () => true, neverActive: true },
+  // Participo solo tiene sentido para quien NO es staff ni owner.
+  { to: '/mis-participaciones', label: 'Participo', icon: ICONS.ticket, show: (u) => !!u.user && !u.isStaff && !u.isOwner },
+  // Panel solo para comerciantes/colaboradores (el owner usa cuentas de prueba para eso).
+  { to: '/panel', label: 'Panel', icon: ICONS.store, show: (u) => u.isStaff && !u.isOwner },
   { to: '/admin', label: 'Admin', icon: ICONS.shield, show: (u) => u.isOwner },
 ]
 
@@ -50,7 +53,7 @@ function DesktopNav() {
           end={n.end}
           className={({ isActive }) =>
             `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-              isActive
+              isActive && !n.neverActive
                 ? 'bg-accent-50 text-accent-700'
                 : 'text-ink-500 hover:bg-ink-50 hover:text-ink-900'
             }`
@@ -113,7 +116,7 @@ function MobileNav() {
             end={n.end}
             className={({ isActive }) =>
               `flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors ${
-                isActive ? 'text-accent-600' : 'text-ink-400 hover:text-ink-700'
+                isActive && !n.neverActive ? 'text-accent-600' : 'text-ink-400 hover:text-ink-700'
               }`
             }
           >

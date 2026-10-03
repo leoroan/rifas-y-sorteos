@@ -59,6 +59,7 @@ const CONSTRAINT_MESSAGES = {
   cancellation_reason_required: 'Para cancelar el evento hace falta un motivo.',
   payment_receipts_not_self_reviewed: 'No podés revisar tu propio comprobante.',
   platform_role_immutable: 'El rol de plataforma no se puede cambiar desde la aplicación.',
+  registration_required: 'Para reservar números tenés que registrarte (email). Podés ver los eventos sin cuenta, pero no reservar.',
   merchant_status_owner_only: 'Sólo el propietario de la plataforma cambia el estado de un comercio.',
 }
 
