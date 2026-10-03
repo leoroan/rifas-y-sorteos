@@ -12,6 +12,7 @@ import { RecoverPage } from '../../features/auth/RecoverPage.jsx'
 import { ResetPage } from '../../features/auth/ResetPage.jsx'
 import { ConvertPage } from '../../features/auth/ConvertPage.jsx'
 import { ProfilePage } from '../../features/auth/ProfilePage.jsx'
+import { NotificationsPage } from '../../features/notifications/NotificationsPage.jsx'
 import { MyParticipationsPage } from '../../features/participants/MyParticipationsPage.jsx'
 import { PanelPage } from '../../features/merchants/PanelPage.jsx'
 import { OwnerPage } from '../../features/admin/OwnerPage.jsx'
@@ -45,6 +46,7 @@ function Root() {
         <Route element={<RequireAuth />}>
           <Route path="/mis-participaciones" element={<MyParticipationsPage />} />
           <Route path="/perfil" element={<ProfilePage />} />
+          <Route path="/notificaciones" element={<NotificationsPage />} />
           <Route path="/panel" element={<PanelPage />} />
         </Route>
 

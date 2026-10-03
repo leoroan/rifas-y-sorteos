@@ -3,6 +3,7 @@ import { useAuth } from '../providers/AuthProvider.jsx'
 import { env } from '../config/env.js'
 import { Button } from '../../components/ui/Button.jsx'
 import { Badge } from '../../components/ui/Badge.jsx'
+import { NotificationBell } from '../../features/notifications/NotificationBell.jsx'
 
 function Icon({ d, className = 'h-5 w-5' }) {
   return (
@@ -68,6 +69,7 @@ function UserArea() {
     <div className="flex items-center gap-2">
       {user ? (
         <>
+          <NotificationBell />
           {isAnonymous && (
             <Link to="/crear-cuenta">
               <Badge tone="accent">Crear cuenta</Badge>
