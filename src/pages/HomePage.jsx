@@ -167,10 +167,18 @@ function EventCard({ event }) {
 }
 
 export function HomePage() {
-  const { data: events, isLoading, error } = useQuery({
+  const { data: allEvents, isLoading, error } = useQuery({
     queryKey: ['public-events'],
     queryFn: listPublicEvents,
   })
+
+  // Activos = abiertos Y dentro de la ventana. El estado describe, el reloj manda.
+  const now = new Date()
+  const isOpen = (e) =>
+    [EVENT_STATUS.PUBLISHED, EVENT_STATUS.OPEN].includes(e.status) &&
+    new Date(e.participation_ends_at) > now
+  const active = (allEvents || []).filter(isOpen)
+  const finished = (allEvents || []).filter((e) => e.status === EVENT_STATUS.DRAWN)
 
   return (
     <div className="space-y-10">
@@ -186,9 +194,9 @@ export function HomePage() {
           <LoadingState label="Buscando sorteos…" />
         ) : error ? (
           <EmptyState title="No pudimos cargar los sorteos" description="Probá de nuevo en un momento." />
-        ) : !events?.length ? (
+        ) : !active.length ? (
           <EmptyState
-            title="Todavía no hay sorteos publicados"
+            title="No hay sorteos activos ahora"
             description="Cuando un comercio publique uno, aparece acá."
             action={
               <Link to="/ingresar">
@@ -198,9 +206,20 @@ export function HomePage() {
           />
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {events.map((event) => (
+            {active.map((event) => (
               <EventCard key={event.id} event={event} />
             ))}
+          </div>
+        )}
+
+        {finished.length > 0 && (
+          <div className="mt-10">
+            <h2 className="mb-4 text-xl font-semibold text-ink-900">Finalizados</h2>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {finished.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
           </div>
         )}
       </section>
