@@ -44,6 +44,40 @@ function PublishButton({ event }) {
   )
 }
 
+function CloseButton({ event }) {
+  const qc = useQueryClient()
+  const close = useMutation({
+    mutationFn: () => callRpc('event_close', { p_event_id: event.id }),
+    onSuccess: (data) => {
+      const pend = data?.pending_reservations ?? 0
+      const sub = data?.submitted_receipts ?? 0
+      showSuccess(
+        'Participación cerrada',
+        pend + sub > 0
+          ? `${pend} reserva(s) abierta(s) y ${sub} comprobante(s) en revisión conservan su plazo.`
+          : 'Ya no se aceptan más números.',
+      )
+      qc.invalidateQueries({ queryKey: ['merchant-events', event.merchant_id] })
+    },
+    onError: (e) => showRpcError(e, 'No se pudo cerrar'),
+  })
+
+  async function onClose() {
+    const ok = await confirmDanger({
+      title: '¿Cerrar la participación?',
+      text: 'Ya no se van a poder reservar números. Las reservas válidas conservan su plazo para subir comprobante.',
+      confirmText: 'Cerrar participación',
+    })
+    if (ok) close.mutate()
+  }
+
+  return (
+    <Button variant="outline" size="sm" onClick={onClose} loading={close.isPending}>
+      Cerrar participación
+    </Button>
+  )
+}
+
 export function EventManageCard({ event }) {
   const qc = useQueryClient()
   const [prizeTitle, setPrizeTitle] = useState('')
@@ -113,6 +147,9 @@ export function EventManageCard({ event }) {
         <div className="flex flex-wrap items-center gap-2">
           {isDraft && <PublishButton event={event} />}
           {!isDraft && <ShareEventButton event={event} />}
+          {[EVENT_STATUS.PUBLISHED, EVENT_STATUS.OPEN].includes(event.status) && (
+            <CloseButton event={event} />
+          )}
         </div>
       </div>
 

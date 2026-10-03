@@ -114,7 +114,7 @@ export function PanelPage() {
             <div className="space-y-3">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-400">Publicados</h3>
               {active.map((e) => (
-                e.status === EVENT_STATUS.CLOSED ? (
+                [EVENT_STATUS.CLOSED, EVENT_STATUS.OPEN, EVENT_STATUS.PUBLISHED].includes(e.status) ? (
                   <EventManageCard key={e.id} event={e} />
                 ) : (
                   <Card key={e.id}>
