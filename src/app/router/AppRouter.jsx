@@ -11,6 +11,7 @@ import { RegisterPage } from '../../features/auth/RegisterPage.jsx'
 import { RecoverPage } from '../../features/auth/RecoverPage.jsx'
 import { ResetPage } from '../../features/auth/ResetPage.jsx'
 import { ConvertPage } from '../../features/auth/ConvertPage.jsx'
+import { ProfilePage } from '../../features/auth/ProfilePage.jsx'
 import { MyParticipationsPage } from '../../features/participants/MyParticipationsPage.jsx'
 import { PanelPage } from '../../features/merchants/PanelPage.jsx'
 import { OwnerPage } from '../../features/admin/OwnerPage.jsx'
@@ -43,6 +44,7 @@ function Root() {
         {/* Participante */}
         <Route element={<RequireAuth />}>
           <Route path="/mis-participaciones" element={<MyParticipationsPage />} />
+          <Route path="/perfil" element={<ProfilePage />} />
           <Route path="/panel" element={<PanelPage />} />
         </Route>
 

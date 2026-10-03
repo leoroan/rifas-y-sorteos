@@ -46,7 +46,9 @@ export function PanelPage() {
   }
 
   const drafts = (events || []).filter((e) => e.status === EVENT_STATUS.DRAFT)
-  const active = (events || []).filter((e) => e.status !== EVENT_STATUS.DRAFT)
+  const inPlay = (events || []).filter((e) => [EVENT_STATUS.PUBLISHED, EVENT_STATUS.OPEN].includes(e.status))
+  const finished = (events || []).filter((e) => [EVENT_STATUS.CLOSED, EVENT_STATUS.DRAWN].includes(e.status))
+  const cancelled = (events || []).filter((e) => e.status === EVENT_STATUS.CANCELLED)
 
   return (
     <div className="space-y-6">
@@ -101,33 +103,45 @@ export function PanelPage() {
           description="Creá el primero con el botón de arriba."
         />
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {drafts.length > 0 && (
-            <div className="space-y-3">
+            <section className="space-y-3">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-400">En borrador</h3>
               {drafts.map((e) => (
                 <EventManageCard key={e.id} event={e} />
               ))}
-            </div>
+            </section>
           )}
-          {active.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-400">Publicados</h3>
-              {active.map((e) => (
-                [EVENT_STATUS.CLOSED, EVENT_STATUS.OPEN, EVENT_STATUS.PUBLISHED].includes(e.status) ? (
-                  <EventManageCard key={e.id} event={e} />
-                ) : (
-                  <Card key={e.id}>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-ink-900">{e.title}</p>
-                        <p className="text-sm text-ink-500">Números {e.numbers_from}–{e.numbers_to} · {e.status}</p>
-                      </div>
-                    </div>
-                  </Card>
-                )
+          {inPlay.length > 0 && (
+            <section className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-400">En juego</h3>
+              {inPlay.map((e) => (
+                <EventManageCard key={e.id} event={e} />
               ))}
-            </div>
+            </section>
+          )}
+          {finished.length > 0 && (
+            <section className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-400">Finalizados</h3>
+              {finished.map((e) => (
+                <EventManageCard key={e.id} event={e} />
+              ))}
+            </section>
+          )}
+          {cancelled.length > 0 && (
+            <section className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-400">Cancelados</h3>
+              {cancelled.map((e) => (
+                <Card key={e.id}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-ink-900">{e.title}</p>
+                      <p className="text-sm text-ink-500">Números {e.numbers_from}–{e.numbers_to} · Cancelado</p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </section>
           )}
         </div>
       )}
