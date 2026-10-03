@@ -2,12 +2,14 @@ import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { listMerchantEvents, listMyMerchants } from '../../services/supabase/queries/merchant.js'
 import { useAuth } from '../../app/providers/AuthProvider.jsx'
-import { Card } from '../../components/ui/Card.jsx'
+import { Card, CardHeader } from '../../components/ui/Card.jsx'
 import { Button } from '../../components/ui/Button.jsx'
 import { LoadingState } from '../../components/ui/LoadingState.jsx'
 import { EmptyState } from '../../components/ui/EmptyState.jsx'
 import { EventForm } from './EventForm.jsx'
 import { EventManageCard } from './EventManageCard.jsx'
+import { ReceiptsCard } from '../payments/ReceiptsCard.jsx'
+import { MerchantStats } from './MerchantStats.jsx'
 import { EVENT_STATUS } from '../../constants/statuses.js'
 
 export function PanelPage() {
@@ -65,6 +67,19 @@ export function PanelPage() {
             ))}
           </select>
         )}
+      </div>
+
+      <MerchantStats merchantId={selected} />
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <ReceiptsCard merchantId={selected} />
+        <Card>
+          <CardHeader title="Accesos rápidos" />
+          <p className="text-sm text-ink-500">
+            Desde acá vas a poder revisar reservas, compartir el sorteo y administrar a tu equipo.
+            (Lo siguiente en la lista.)
+          </p>
+        </Card>
       </div>
 
       <div className="flex items-center justify-between">
