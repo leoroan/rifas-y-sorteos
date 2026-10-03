@@ -10,6 +10,7 @@ import { Button } from '../../components/ui/Button.jsx'
 
 import { ReservePanel } from '../reservations/ReservePanel.jsx'
 import { ShareEventButton } from '../../components/domain/ShareEventButton.jsx'
+import { NumbersGrid } from '../../components/domain/NumbersGrid.jsx'
 import { EVENT_STATUS } from '../../constants/statuses.js'
 
 const STATUS_TONE = {
@@ -71,8 +72,15 @@ export function EventPage({ resultado: _resultado = false }) {
     )
   }
 
-  const open = [EVENT_STATUS.PUBLISHED, EVENT_STATUS.OPEN].includes(event.status)
+  // El estado DESCRIBE, pero la autoridad es el reloj (R12): si la ventana
+  // ya venció aunque el estado no se haya actualizado, el evento está cerrado
+  // para participar. Esto evita que el usuario recorra toda la reserva para
+  // recién enterarse al final.
+  const isOpenStatus = [EVENT_STATUS.PUBLISHED, EVENT_STATUS.OPEN].includes(event.status)
+  const windowOpen = new Date(event.participation_ends_at) > new Date()
+  const open = isOpenStatus && windowOpen
   const drawn = event.status === EVENT_STATUS.DRAWN
+  const ended = (isOpenStatus && !windowOpen) || event.status === EVENT_STATUS.CLOSED
 
   return (
     <div className="space-y-6">
@@ -140,12 +148,29 @@ export function EventPage({ resultado: _resultado = false }) {
 
       {open && <ReservePanel event={event} merchant={merchant} />}
 
-      {drawn && <WinnersCard event={event} />}
+      {drawn && (
+        <>
+          <WinnersCard event={event} />
+          <Card>
+            <NumbersGrid event={event} title="Números (el ganador está destacado)" />
+          </Card>
+        </>
+      )}
 
-      {!open && !drawn && (
+      {ended && (
+        <Card>
+          <CardHeader
+            title="La participación ya cerró"
+            subtitle="Ya no se pueden reservar números. Consultá los resultados cuando el comercio publique el sorteo."
+          />
+          <NumbersGrid event={event} title="Estado de los números al cierre" />
+        </Card>
+      )}
+
+      {event.status === EVENT_STATUS.CANCELLED && (
         <EmptyState
-          title={event.status === EVENT_STATUS.CANCELLED ? 'Este sorteo fue cancelado' : 'La participación está cerrada'}
-          description={event.status === EVENT_STATUS.CANCELLED ? event.cancellation_reason : 'Ya no se aceptan más números.'}
+          title="Este sorteo fue cancelado"
+          description={event.cancellation_reason || 'El comercio canceló el evento.'}
         />
       )}
     </div>
