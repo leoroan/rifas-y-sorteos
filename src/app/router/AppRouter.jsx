@@ -13,6 +13,7 @@ import { ResetPage } from '../../features/auth/ResetPage.jsx'
 import { ConvertPage } from '../../features/auth/ConvertPage.jsx'
 import { ProfilePage } from '../../features/auth/ProfilePage.jsx'
 import { ApplicationForm } from '../../features/admin/ApplicationForm.jsx'
+import { OnboardingPage } from '../../features/auth/OnboardingPage.jsx'
 import { NotificationsPage } from '../../features/notifications/NotificationsPage.jsx'
 import { MyParticipationsPage } from '../../features/participants/MyParticipationsPage.jsx'
 import { PanelPage } from '../../features/merchants/PanelPage.jsx'
@@ -29,6 +30,7 @@ function Root() {
         {/* Público: sin login, sin registro */}
         <Route path="/" element={<HomePage />} />
         <Route path="/solicitar" element={<ApplicationForm />} />
+        <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/e/:slug" element={<EventPage />} />
         <Route path="/e/:slug/resultado" element={<EventPage resultado />} />
         <Route path="/terminos" element={<LegalPage kind="TERMS" />} />
