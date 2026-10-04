@@ -21,66 +21,56 @@ function Mark() {
   )
 }
 
-function NumberMotif() {
-  const winner = 12
-  const reserved = [3, 4, 9]
-  const paid = [6, 15]
-  return (
-    <div className="relative">
-      <div className="grid grid-cols-5 gap-2 rounded-2xl border border-ink-200 bg-paper-100 p-5 shadow-card">
-        {Array.from({ length: 20 }, (_, i) => {
-          const n = i + 1
-          let cls = 'border-ink-200 bg-ink-50 text-ink-400'
-          if (n === winner) cls = 'border-winner-400 bg-winner-100 text-winner-700 ring-2 ring-winner-400'
-          else if (paid.includes(n)) cls = 'border-paid-200 bg-paid-50 text-paid-700'
-          else if (reserved.includes(n)) cls = 'border-reserved-200 bg-reserved-50 text-reserved-700'
-          return (
-            <div key={n} className={`tnum grid h-10 place-items-center rounded-lg border text-sm font-bold sm:h-12 ${cls}`}>
-              {String(n).padStart(2, '0')}
-            </div>
-          )
-        })}
-      </div>
-      <div className="absolute -bottom-4 right-4 flex items-center gap-1.5 rounded-lg bg-paid-500 px-3 py-1.5 text-sm font-bold text-white shadow-pop">
-        <Icon name="check" size={15} /> Verificable
-      </div>
-    </div>
-  )
-}
+
 
 function Hero() {
   return (
-    <section className="overflow-hidden rounded-2xl bg-ink-950 text-paper-100">
-      <div className="grid gap-10 px-6 py-10 sm:px-10 lg:grid-cols-2 lg:items-center lg:gap-8 lg:py-16">
-        <div>
-          <Badge tone="accent" className="mb-4">Plataforma de sorteos y rifas</Badge>
-          <h1 className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-[2.75rem] lg:leading-[1.1]">
-            {site.tagline}
-          </h1>
-          <p className="mt-4 max-w-md text-base leading-relaxed text-ink-300">
-            {site.description}
-          </p>
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <Link to="/solicitar">
-              <Button size="lg" className="w-full sm:w-auto">
-                {site.heroCta} <Icon name="arrowRight" size={18} />
-              </Button>
-            </Link>
-            <a href="#sorteos">
-              <Button size="lg" variant="secondary" className="w-full bg-paper-100/10 text-paper-100 hover:bg-paper-100/20 sm:w-auto">
-                {site.heroSecondary}
-              </Button>
-            </a>
-          </div>
-          <ul className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink-300">
-            <li className="flex items-center gap-2"><Icon name="verified" size={16} className="text-brand-400" /> Seed público verificable</li>
-            <li className="flex items-center gap-2"><Icon name="lock" size={16} className="text-brand-400" /> Comprobantes privados</li>
-            <li className="flex items-center gap-2"><Icon name="receipt" size={16} className="text-brand-400" /> Auditoría completa</li>
-          </ul>
+    <section className="relative overflow-hidden rounded-2xl bg-ink-950 text-paper-100">
+      {/* backdrop profesional: glow de marca + watermark gigante, no dibujo literal */}
+      <div className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-brand-600/20 blur-3xl" aria-hidden="true" />
+      <div className="pointer-events-none absolute -bottom-32 -left-16 h-80 w-80 rounded-full bg-brand-500/10 blur-3xl" aria-hidden="true" />
+      <div className="pointer-events-none absolute -bottom-10 right-6 select-none text-[16rem] font-black leading-none text-paper-100/5 sm:text-[20rem]" aria-hidden="true">
+        #
+      </div>
+
+      {/* acceso a login siempre visible */}
+      <Link
+        to="/ingresar"
+        className="absolute right-4 top-4 z-10 inline-flex items-center gap-1.5 rounded-lg border border-paper-100/20 bg-paper-100/10 px-3.5 py-2 text-sm font-medium text-paper-100 backdrop-blur transition-colors hover:bg-paper-100/20"
+      >
+        <Icon name="user" size={16} /> Ingresar
+      </Link>
+
+      <div className="relative px-6 py-14 sm:px-12 sm:py-20 lg:py-24">
+        <Badge tone="accent" className="mb-5">Plataforma de sorteos y rifas</Badge>
+        <h1 className="max-w-2xl text-3xl font-bold leading-[1.1] tracking-tight sm:text-5xl sm:leading-[1.08]">
+          {site.tagline}
+        </h1>
+        <p className="mt-5 max-w-xl text-base leading-relaxed text-ink-300 sm:text-lg">
+          {site.description}
+        </p>
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <Link to="/solicitar">
+            <Button size="lg" className="w-full sm:w-auto">
+              {site.heroCta} <Icon name="arrowRight" size={18} />
+            </Button>
+          </Link>
+          <a href="#sorteos">
+            <Button size="lg" variant="secondary" className="w-full bg-paper-100/10 text-paper-100 hover:bg-paper-100/20 sm:w-auto">
+              {site.heroSecondary}
+            </Button>
+          </a>
+          <Link to="/ingresar" className="text-sm text-ink-300 underline-offset-4 hover:text-paper-100 hover:underline sm:ml-2">
+            Ya tenés cuenta? Ingresá
+          </Link>
         </div>
-        <div className="lg:justify-self-end">
-          <NumberMotif />
-        </div>
+
+        <ul className="mt-10 flex flex-wrap gap-x-6 gap-y-2.5 border-t border-paper-100/10 pt-6 text-sm text-ink-300">
+          <li className="flex items-center gap-2"><Icon name="verified" size={16} className="text-brand-400" /> Seed público verificable</li>
+          <li className="flex items-center gap-2"><Icon name="lock" size={16} className="text-brand-400" /> Comprobantes privados</li>
+          <li className="flex items-center gap-2"><Icon name="receipt" size={16} className="text-brand-400" /> Auditoría completa</li>
+          <li className="flex items-center gap-2"><Icon name="link" size={16} className="text-brand-400" /> Sin WhatsApp obligatorio</li>
+        </ul>
       </div>
     </section>
   )
@@ -88,17 +78,17 @@ function Hero() {
 
 function TrustStrip() {
   const items = [
-    { icon: 'verified', title: 'Verificable', desc: 'El seed y la fórmula del sorteo son públicos. Cualquiera puede recalcular el ganador.' },
-    { icon: 'zap', title: 'Sin caos', desc: 'Números, reservas y comprobantes en un solo lugar. Sin capturas ni planillas.' },
-    { icon: 'lock', title: 'Privado por diseño', desc: 'Los comprobantes viven en un espacio privado, no en un grupo de chat.' },
-    { icon: 'link', title: 'Sin WhatsApp obligatorio', desc: 'Compartís el enlace donde quieras. La plataforma no depende de ningún chat.' },
+    { icon: 'verified', tone: 'bg-paid-50 text-paid-600', title: 'Verificable', desc: 'El seed y la fórmula del sorteo son públicos. Cualquiera puede recalcular el ganador.' },
+    { icon: 'zap', tone: 'bg-reserved-50 text-reserved-600', title: 'Sin caos', desc: 'Números, reservas y comprobantes en un solo lugar. Sin capturas ni planillas.' },
+    { icon: 'lock', tone: 'bg-submitted-50 text-submitted-600', title: 'Privado por diseño', desc: 'Los comprobantes viven en un espacio privado, no en un grupo de chat.' },
+    { icon: 'share', tone: 'bg-brand-50 text-brand-600', title: 'Sin WhatsApp obligatorio', desc: 'Compartís el enlace donde quieras. La plataforma no depende de ningún chat.' },
   ]
   return (
-    <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <section className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {items.map((it) => (
-        <Card key={it.title} padding="p-4">
-          <div className="mb-2 grid h-9 w-9 place-items-center rounded-lg bg-brand-50 text-brand-600">
-            <Icon name={it.icon} size={18} />
+        <Card key={it.title} padding="p-5" className="text-center">
+          <div className={`mx-auto mb-3 grid h-11 w-11 place-items-center rounded-xl ${it.tone}`}>
+            <Icon name={it.icon} size={20} />
           </div>
           <p className="font-semibold text-ink-900">{it.title}</p>
           <p className="mt-1 text-sm leading-relaxed text-ink-500">{it.desc}</p>

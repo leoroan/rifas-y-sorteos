@@ -150,7 +150,8 @@ export function AppLayout() {
         <Outlet />
       </main>
 
-      <footer className="hidden border-t border-ink-200 py-6 md:block">
+      {!isHome && (
+      <footer className="border-t border-ink-200 py-6">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-2 px-4 text-xs text-ink-400 sm:flex-row">
           <span>{env.appName} — sorteos simples, claros y auditables</span>
           <span className="flex gap-4">
@@ -160,6 +161,7 @@ export function AppLayout() {
           </span>
         </div>
       </footer>
+      )}
 
       <MobileNav />
     </div>
