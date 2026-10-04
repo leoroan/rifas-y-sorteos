@@ -116,16 +116,16 @@ end $$;
 -- APROVED, ToS aceptados, y todos los datos del negocio.
 -- ---------------------------------------------------------------------------
 create or replace function public.application_complete(
-  p_application_id   uuid,
-  p_merchant_name     text,
-  p_merchant_slug     text,
-  p_tax_type          text,
-  p_tax_id            text,
-  p_contact_phone     text,
-  p_contact_whatsapp   text default null,
-  p_contact_instagram text default null,
-  p_payment_instructions text default null,
-  p_terms_version_id  uuid
+  p_application_id      uuid,
+  p_merchant_name        text,
+  p_merchant_slug        text,
+  p_tax_type             text,
+  p_tax_id               text,
+  p_contact_phone        text,
+  p_terms_version_id     uuid,
+  p_contact_whatsapp     text default null,
+  p_contact_instagram    text default null,
+  p_payment_instructions text default null
 )
 returns jsonb
 language plpgsql
@@ -238,6 +238,6 @@ begin
 end $$;
 
 revoke all on function public.application_review(uuid, text, text, text) from public, anon;
-revoke all on function public.application_complete(uuid, text, text, text, text, text, text, text, text, uuid) from public, anon;
+revoke all on function public.application_complete(uuid, text, text, text, text, text, uuid, text, text, text) from public, anon;
 grant execute on function public.application_review(uuid, text, text, text) to authenticated;
-grant execute on function public.application_complete(uuid, text, text, text, text, text, text, text, text, uuid) to authenticated;
+grant execute on function public.application_complete(uuid, text, text, text, text, text, uuid, text, text, text) to authenticated;
