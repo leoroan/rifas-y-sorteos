@@ -1,83 +1,102 @@
+/*
+ * SISTEMA DE DISEÑO — identidad del producto.
+ * Único lugar donde viven los tokens. Todo lo mutable (color, tipografía,
+ * radios, sombras, espaciado) se cambia acá y se propaga a toda la app.
+ *
+ * Identidad elegida: neutro cálido + un acento coral (festivo pero confiable),
+ * colores semánticos reservados para estados. Sin gradientes decorativos.
+ */
+
 @theme {
-  /*
-   * Sistema visual: UN neutro dominante + UN acento + colores semánticos
-   * exclusivamente para estados. Sin gradientes decorativos, sin 20 colores.
-   */
+  /* ---------- COLOR ---------- */
 
-  /* Neutro (tinta) */
-  --color-ink-50:  #f6f8fa;
-  --color-ink-100: #eceff3;
-  --color-ink-200: #d6dce3;
-  --color-ink-300: #b3bdca;
-  --color-ink-400: #8694a6;
-  --color-ink-500: #5d6b80;
-  --color-ink-600: #455163;
-  --color-ink-700: #354050;
-  --color-ink-800: #232c3b;
-  --color-ink-900: #161c27;
-  --color-ink-950: #0b0f16;
+  /* Neutro cálido (tinta) */
+  --color-ink-50:  #fafaf9;
+  --color-ink-100: #f4f3f1;
+  --color-ink-200: #e6e3df;
+  --color-ink-300: #cfcac4;
+  --color-ink-400: #a39d95;
+  --color-ink-500: #78716a;
+  --color-ink-600: #57504a;
+  --color-ink-700: #413b36;
+  --color-ink-800: #292521;
+  --color-ink-900: #1a1714;
+  --color-ink-950: #100d0b;
 
-  /* Superficie (fondo) */
-  --color-paper-50:  #fafbfc;
+  /* Superficie */
+  --color-paper-50:  #fbfaf8;
   --color-paper-100: #ffffff;
-  --color-paper-200: #f2f4f7;
+  --color-paper-200: #f4f2ee;
 
-  /* Acento (uno solo, usado con moderación) */
-  --color-accent-50:  #eef4ff;
-  --color-accent-100: #dbe7ff;
-  --color-accent-200: #bdd3ff;
-  --color-accent-300: #8fb4ff;
-  --color-accent-400: #5b8dff;
-  --color-accent-500: #3466f6;
-  --color-accent-600: #1f4ddb;
-  --color-accent-700: #1c40b0;
-  --color-accent-800: #1d3a8c;
-  --color-accent-900: #1d3470;
+  /* Acento de marca: CORAL (único). Festivo, confiable, memorable. */
+  --color-brand-50:  #fff3ed;
+  --color-brand-100: #ffe3d3;
+  --color-brand-200: #ffc9a8;
+  --color-brand-300: #ffa571;
+  --color-brand-400: #f97e3e;
+  --color-brand-500: #ef5e1a;
+  --color-brand-600: #d94a10;
+  --color-brand-700: #b23d0f;
+  --color-brand-800: #8f3313;
+  --color-brand-900: #732b13;
 
-  /* Estados (semánticos, inequívocos) */
-  --color-available-50:  #effaf2;
-  --color-available-500: #1fae4f;
-  --color-available-700: #15793a;
+  /* Alias para no romper código existente (accent = brand) */
+  --color-accent-50:  var(--color-brand-50);
+  --color-accent-100: var(--color-brand-100);
+  --color-accent-200: var(--color-brand-200);
+  --color-accent-300: var(--color-brand-300);
+  --color-accent-400: var(--color-brand-400);
+  --color-accent-500: var(--color-brand-500);
+  --color-accent-600: var(--color-brand-600);
+  --color-accent-700: var(--color-brand-700);
+  --color-accent-800: var(--color-brand-800);
+  --color-accent-900: var(--color-brand-900);
 
-  --color-reserved-50:  #fff7e8;
-  --color-reserved-500: #e39a0a;
-  --color-reserved-700: #a96f06;
+  /* Estados (semánticos) */
+  --color-available-50:  #ecfdf3;
+  --color-available-500: #16a34a;
+  --color-available-700: #15803d;
+  --color-reserved-50:  #fffbeb;
+  --color-reserved-500: #d97706;
+  --color-reserved-700: #b45309;
+  --color-submitted-50:  #eff6ff;
+  --color-submitted-500: #3b82f6;
+  --color-submitted-700: #1d4ed8;
+  --color-paid-50:  #ecfdf5;
+  --color-paid-500: #059669;
+  --color-paid-700: #047857;
+  --color-winner-50:  #faf5ff;
+  --color-winner-100: #f3e8ff;
+  --color-winner-300: #d8b4fe;
+  --color-winner-400: #c084fc;
+  --color-winner-500: #a855f7;
+  --color-winner-700: #7e22ce;
+  --color-error-50:  #fef2f2;
+  --color-error-500: #ef4444;
+  --color-error-700: #b91c1c;
+  --color-warn-50:  #fffbeb;
+  --color-warn-500: #d97706;
+  --color-warn-700: #b45309;
 
-  --color-submitted-50:  #eef3ff;
-  --color-submitted-500: #4f6fe4;
-  --color-submitted-700: #3a52b5;
-
-  --color-paid-50:  #e9f8f3;
-  --color-paid-500: #0d9d7a;
-  --color-paid-700: #0a6f57;
-
-  --color-winner-50:  #f7eefb;
-  --color-winner-500: #a24cd6;
-  --color-winner-700: #7a35a6;
-
-  --color-error-50:  #fdeeee;
-  --color-error-500: #dd3a3a;
-  --color-error-700: #b02c2c;
-
-  --color-warn-50:  #fff7e8;
-  --color-warn-500: #e39a0a;
-  --color-warn-700: #a96f06;
-
-  /* Tipografía: system stack, con cifras tabulares para los números */
+  /* ---------- TIPOGRAFÍA ---------- */
+  /* Familia de texto. Cambiá esto para alternar tipografía global. */
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
-  --font-numeric: "SF Mono", ui-monospace, Menlo, Consolas, "Roboto Mono", monospace;
+  /* Familia para números/datos: tabulares para alinear columnas. */
+  --font-numeric: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
 
-  /* Radios: contenidos, nada extremo */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  /* ---------- RADIOS ---------- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
 
-  /* Espaciado base (Tailwind lo genera, esto documenta la escala) */
+  /* ---------- SOMBRAS ---------- */
+  --shadow-card: 0 1px 2px rgb(16 13 11 / 0.05), 0 1px 6px rgb(16 13 11 / 0.04);
+  --shadow-pop:  0 10px 30px -10px rgb(16 13 11 / 0.2);
+  --shadow-hero: 0 20px 50px -15px rgb(217 74 16 / 0.25);
+
+  /* ---------- ESPACIADO ---------- */
   --spacing-field: 0.75rem;
-  --spacing-card: 1rem;
-
-  /* Sombras: discretas */
-  --shadow-card: 0 1px 2px rgb(11 15 22 / 0.06);
-  --shadow-pop: 0 6px 24px -6px rgb(11 15 22 / 0.18);
+  --spacing-card: 1.25rem;
 }

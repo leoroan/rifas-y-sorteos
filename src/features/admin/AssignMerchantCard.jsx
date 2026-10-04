@@ -20,13 +20,13 @@ export function AssignMerchantCard({ merchants }) {
     e.preventDefault()
     setError(null)
     if (!merchantId) return setError('Elegí un comercio.')
-    if (!email) return setError('Ingresá el email del comerciante.')
+    if (!email) return setError('Ingresá el email del organizador.')
     setBusy(true)
     try {
       const profile = await findProfileByEmail(email)
       if (profile) {
         await callRpc('admin_assign_merchant', { p_profile_id: profile.id, p_merchant_id: merchantId })
-        showSuccess('Comerciante asignado', `${profile.email} ya puede administrar el comercio.`)
+        showSuccess('Organizador asignado', `${profile.email} ya puede administrar el comercio.`)
       } else {
         await callRpc('staff_invite', { p_merchant_id: merchantId, p_email: email.trim(), p_role: 'MERCHANT' })
         showSuccess(
@@ -47,7 +47,7 @@ export function AssignMerchantCard({ merchants }) {
 
   return (
     <Card>
-      <CardHeader title="Asignar comerciante" subtitle="Sólo el OWNER puede otorgar el rol de comerciante." />
+      <CardHeader title="Asignar organizador" subtitle="Sólo el OWNER puede otorgar el rol de organizador." />
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="merchant" className="text-sm font-medium text-ink-700">Comercio</label>
@@ -65,17 +65,17 @@ export function AssignMerchantCard({ merchants }) {
           </select>
         </div>
         <Input
-          label="Email del comerciante"
+          label="Email del organizador"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="comerciante@ejemplo.com"
+          placeholder="organizador@ejemplo.com"
           hint="Si no está registrado, se le manda una invitación: entra apenas se registre."
           required
         />
         {error && <p className="text-sm text-error-500" role="alert">{error}</p>}
         <Button type="submit" loading={busy} className="self-start">
-          Asignar como comerciante
+          Asignar como organizador
         </Button>
       </form>
     </Card>

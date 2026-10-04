@@ -18,7 +18,7 @@ export function CreateMerchantCard() {
   const mutation = useMutation({
     mutationFn: (payload) => callRpc('admin_merchant_create', { p_payload: payload }),
     onSuccess: () => {
-      showSuccess('Comercio creado', 'Ahora podés asignarle un comerciante.')
+      showSuccess('Comercio creado', 'Ahora podés asignarle un organizador.')
       setName('')
       setSlug('')
       qc.invalidateQueries({ queryKey: ['merchants'] })

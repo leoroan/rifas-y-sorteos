@@ -92,7 +92,7 @@ function MemberRow({ member, perms, isMerchantOwner, onChanged }) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Badge tone={isMerchant ? 'accent' : 'neutral'}>
-            {isMerchant ? 'Comerciante' : 'Colaborador'}
+            {isMerchant ? 'Organizador' : 'Colaborador'}
           </Badge>
           <span className="font-medium text-ink-900">{name}</span>
           {suspended && <Badge tone="warn">Suspendido</Badge>}
@@ -140,8 +140,8 @@ function MemberRow({ member, perms, isMerchantOwner, onChanged }) {
 }
 
 /*
- * Equipo del comercio: comerciantes y colaboradores. Un colaborador nunca
- * puede crear otro comerciante (eso es sólo del OWNER), y sus permisos se
+ * Equipo del comercio: organizadores y colaboradores. Un colaborador nunca
+ * puede crear otro organizador (eso es sólo del OWNER), y sus permisos se
  * delegan dentro del techo del rol MERCHANT (la RPC lo hace cumplir).
  */
 export function StaffCard({ merchantId }) {
@@ -220,8 +220,8 @@ export function StaffCard({ merchantId }) {
           </div>
           {error && <p className="mt-1 text-sm text-error-500" role="alert">{error}</p>}
           <p className="mt-2 text-xs text-ink-400">
-            El colaborador no puede crear comerciantes ni tocar la configuración global. Sus permisos se
-            delegan con los botones de arriba, dentro del techo del comerciante.
+            El colaborador no puede crear organizadores ni tocar la configuración global. Sus permisos se
+            delegan con los botones de arriba, dentro del techo del organizador.
           </p>
         </form>
       )}

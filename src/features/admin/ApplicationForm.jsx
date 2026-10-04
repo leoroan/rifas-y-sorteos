@@ -7,7 +7,7 @@ import { Button } from '../../components/ui/Button.jsx'
 import { Input } from '../../components/ui/Input.jsx'
 
 /*
- * Formulario público para ser comerciante. No expone el email del OWNER:
+ * Formulario público para publicar sorteos. No expone el email del OWNER:
  * el interesado completa, la solicitud queda PENDING y el OWNER la revisa
  * desde /admin/solicitudes.
  */

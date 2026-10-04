@@ -14,7 +14,7 @@ import { LoadingState } from '../../components/ui/LoadingState.jsx'
 
 /*
  * Onboarding: el solicitante cuya aplicacion fue APROBADA completa los datos
- * del negocio, ve su plan, acepta los ToS y queda como comerciante.
+ * del negocio, ve su plan, acepta los ToS y queda como organizador.
  */
 export function OnboardingPage() {
   const navigate = useNavigate()
