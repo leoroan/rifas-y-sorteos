@@ -143,7 +143,7 @@ export function AuthProvider({ children }) {
       profile?.platform_role === 'OWNER'
         ? 'Propietario'
         : memberships.some((m) => m.role === 'MERCHANT')
-          ? 'Comerciante'
+          ? 'Organizador'
           : memberships.some((m) => m.role === 'COLLABORATOR')
             ? 'Colaborador'
             : 'Participante',

@@ -126,7 +126,7 @@ export function ApplicationsCard() {
   return (
     <Card>
       <CardHeader
-        title="Solicitudes de comerciantes"
+        title="Solicitudes para publicar sorteos"
         subtitle={pending.length ? pending.length + ' pendiente(s)' : 'Sin pendientes'}
       />
       {isLoading ? (

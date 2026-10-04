@@ -1,4 +1,5 @@
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { site } from '../config/site.js'
 import { useAuth } from '../providers/AuthProvider.jsx'
 import { env } from '../config/env.js'
 import { Button } from '../../components/ui/Button.jsx'
@@ -37,7 +38,7 @@ function Logo() {
       <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent-600 text-base font-bold text-white shadow-card">
         #
       </span>
-      <span className="hidden tracking-tight sm:inline">{env.appName}</span>
+      <span className="hidden tracking-tight sm:inline">{site.name}</span>
     </Link>
   )
 }
@@ -130,8 +131,12 @@ function MobileNav() {
 }
 
 export function AppLayout() {
+  const location = useLocation()
+  const isHome = location.pathname === '/'
+
   return (
     <div className="flex min-h-screen flex-col">
+      {!isHome && (
       <header className="sticky top-0 z-20 border-b border-ink-200 bg-paper-100/90 backdrop-blur">
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4">
           <Logo />
@@ -139,8 +144,9 @@ export function AppLayout() {
           <UserArea />
         </div>
       </header>
+      )}
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 pb-24 md:pb-6">
+      <main className={`mx-auto w-full flex-1 px-4 ${isHome ? 'max-w-7xl py-6 pb-10' : 'max-w-6xl py-6 pb-24 md:pb-6'}`}>
         <Outlet />
       </main>
 
